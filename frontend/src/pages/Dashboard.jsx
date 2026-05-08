@@ -75,7 +75,7 @@ export default function Dashboard() {
       <div className="app-shell min-h-screen flex items-center justify-center">
         <div className="flex gap-2">
           {[0,1,2].map(i => (
-            <div key={i} className="w-2 h-2 bg-indigo-200 rounded-full animate-bounce" style={{ animationDelay: `${i*150}ms` }} />
+            <div key={i} className="w-2 h-2 bg-[var(--brand)] rounded-full animate-bounce" style={{ animationDelay: `${i*150}ms` }} />
           ))}
         </div>
       </div>
@@ -159,8 +159,8 @@ export default function Dashboard() {
               <h3 className="text-[var(--text-main)] font-semibold mb-6">Chats by Intent</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={stats.intentStats?.map(i => ({ name: i._id, count: i.count }))}>
-                  <XAxis dataKey="name" stroke="#8a817b" tick={{ fill: '#6f6a67', fontSize: 12 }} />
-                  <YAxis stroke="#8a817b" tick={{ fill: '#6f6a67', fontSize: 12 }} />
+                  <XAxis dataKey="name" stroke="var(--text-soft)" tick={{ fill: 'var(--text-soft)', fontSize: 12 }} />
+                  <YAxis stroke="var(--text-soft)" tick={{ fill: 'var(--text-soft)', fontSize: 12 }} />
                   <Tooltip contentStyle={{ background: 'var(--surface-strong)', border: '1px solid var(--border-soft)', borderRadius: 12, color: 'var(--text-main)' }} />
                   <Bar dataKey="count" fill="#ff8c41" radius={[8, 8, 0, 0]} />
                 </BarChart>
@@ -192,8 +192,8 @@ export default function Dashboard() {
                 <h3 className="text-[var(--text-main)] font-semibold mb-6">Chats — Last 7 Days</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={stats.last7Days?.map(d => ({ date: d._id, chats: d.count }))}>
-                    <XAxis dataKey="date" stroke="#8a817b" tick={{ fill: '#6f6a67', fontSize: 11 }} />
-                    <YAxis stroke="#8a817b" tick={{ fill: '#6f6a67', fontSize: 11 }} />
+                    <XAxis dataKey="date" stroke="var(--text-soft)" tick={{ fill: 'var(--text-soft)', fontSize: 11 }} />
+                    <YAxis stroke="var(--text-soft)" tick={{ fill: 'var(--text-soft)', fontSize: 11 }} />
                     <Tooltip contentStyle={{ background: 'var(--surface-strong)', border: '1px solid var(--border-soft)', borderRadius: 12, color: 'var(--text-main)' }} />
                     <Line type="monotone" dataKey="chats" stroke="#ff7a2f" strokeWidth={2.5} dot={{ fill: '#ff7a2f', r: 4 }} />
                   </LineChart>
@@ -222,7 +222,7 @@ export default function Dashboard() {
                     placeholder="Question"
                     value={faqForm.question}
                     onChange={e => setFaqForm({ ...faqForm, question: e.target.value })}
-                    className="input-premium px-4 py-3 placeholder-slate-500 text-sm"
+                    className="input-premium px-4 py-3 text-sm"
                     required
                   />
                   <textarea
@@ -230,7 +230,7 @@ export default function Dashboard() {
                     value={faqForm.answer}
                     onChange={e => setFaqForm({ ...faqForm, answer: e.target.value })}
                     rows={2}
-                    className="textarea-premium px-4 py-3 placeholder-slate-500 text-sm resize-none"
+                    className="textarea-premium px-4 py-3 text-sm resize-none"
                     required
                   />
                   <div className="flex gap-3">

@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Ticket, BarChart3, Zap, Shield, Clock, ArrowRight, Bot, Users, Sparkles } from 'lucide-react';
@@ -45,66 +44,11 @@ const testimonials = [
   },
 ];
 
-function usePremiumTyping(phrases, opts) {
-  const { typeMs = 46, pauseMs = 1200, fadeMs = 260 } = opts || {};
-  const [idx, setIdx] = useState(0);
-  const [text, setText] = useState('');
-  const [opacity, setOpacity] = useState(1);
-  const [phase, setPhase] = useState('typing'); // typing | hold | fade
 
-  useEffect(() => {
-    const safePhrases = Array.isArray(phrases) && phrases.length ? phrases : ['modern businesses'];
-    const current = safePhrases[idx % safePhrases.length];
-
-    if (phase === 'typing') {
-      const id = window.setTimeout(() => {
-        const next = current.slice(0, text.length + 1);
-        setText(next);
-        if (next === current) setPhase('hold');
-      }, typeMs);
-      return () => window.clearTimeout(id);
-    }
-
-    if (phase === 'hold') {
-      const id = window.setTimeout(() => {
-        setOpacity(0);
-        setPhase('fade');
-      }, pauseMs);
-      return () => window.clearTimeout(id);
-    }
-
-    if (phase === 'fade') {
-      const id = window.setTimeout(() => {
-        setText('');
-        setOpacity(1);
-        setIdx((v) => (v + 1) % safePhrases.length);
-        setPhase('typing');
-      }, fadeMs);
-      return () => window.clearTimeout(id);
-    }
-  }, [fadeMs, idx, pauseMs, phase, phrases, text.length, typeMs]);
-
-  return { text, opacity };
-}
 
 export default function Landing() {
   const navigate = useNavigate();
   const chatbotPills = ['Order status and delivery', 'Refund and billing requests', 'Account login issues', 'Subscription upgrades'];
-  const typingPhrases = useMemo(
-    () => [
-      'modern businesses.',
-      'fast growing startups.',
-      'high-volume support teams.',
-      'scaling online businesses.',
-      'teams that move fast.',
-    ],
-    []
-  );
-  const { text: typedSuffix, opacity: typedOpacity } = usePremiumTyping(typingPhrases, {
-    typeMs: 44,
-    pauseMs: 1200,
-    fadeMs: 240,
-  });
 
   return (
     <div className="app-shell min-h-screen">
@@ -112,9 +56,9 @@ export default function Landing() {
 
       <section className="relative px-6 pt-10 sm:pt-14 pb-16 sm:pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-[820px] h-[820px] bg-orange-300/30 rounded-full blur-[140px]" />
-          <div className="absolute top-24 left-6 w-[320px] h-[320px] bg-amber-200/45 rounded-full blur-[110px]" />
-          <div className="absolute top-10 right-6 w-[260px] h-[260px] bg-orange-200/35 rounded-full blur-[110px]" />
+          <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-[820px] h-[820px] bg-orange-300/20 dark:bg-orange-400/25 rounded-full blur-[140px]" />
+          <div className="absolute top-24 left-6 w-[320px] h-[320px] bg-amber-200/25 dark:bg-amber-300/35 rounded-full blur-[110px]" />
+          <div className="absolute top-10 right-6 w-[260px] h-[260px] bg-orange-200/20 dark:bg-orange-300/25 rounded-full blur-[110px]" />
         </div>
 
         <div className="max-w-6xl mx-auto relative z-10">
@@ -127,14 +71,7 @@ export default function Landing() {
 
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold text-[var(--text-main)] mb-5 leading-tight tracking-tight">
                 <span className="block">
-                  <span className="gradient-text">AI customer support built for </span>
-                  <span
-                    className="gradient-text inline-flex items-center"
-                    style={{ opacity: typedOpacity, transition: 'opacity 260ms ease' }}
-                  >
-                    {typedSuffix}
-                    <span className="ml-1 w-[10px] h-[1.05em] bg-[var(--brand)]/70 inline-block rounded-sm cursor-blink" />
-                  </span>
+                  <span className="gradient-text">X1Chat built for modern businesses.</span>
                 </span>
               </h1>
 
