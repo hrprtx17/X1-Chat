@@ -7,7 +7,7 @@ export default function ChatBubble({ message }) {
   if (isSystem) {
     return (
       <div className="flex justify-center my-2">
-        <div className="bg-amber-400/10 border border-amber-300/20 text-amber-200 px-4 py-2 rounded-xl text-xs max-w-md text-center">
+        <div className="bg-orange-200/35 border border-orange-300/30 text-[var(--text-main)] px-4 py-2 rounded-xl text-xs max-w-md text-center">
           {message.text}
         </div>
       </div>
@@ -17,14 +17,14 @@ export default function ChatBubble({ message }) {
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} mb-4`}>
       <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
-        isUser ? 'bg-indigo-400/20 border border-indigo-300/30' : 'bg-slate-900/80 border border-cyan-200/20'
+        isUser ? 'bg-orange-200/40 border border-orange-300/35' : 'glass border border-orange-200/40'
       }`}>
-        {isUser ? <User size={14} className="text-indigo-200" /> : <Bot size={14} className="text-cyan-200" />}
+        {isUser ? <User size={14} className="text-[var(--brand)]" /> : <Bot size={14} className="text-[var(--brand)]" />}
       </div>
       <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
         isUser
-          ? 'bg-gradient-to-br from-indigo-300 to-emerald-200 text-slate-900 font-medium rounded-tr-sm'
-          : 'glass text-slate-100 rounded-tl-sm border border-white/10'
+          ? 'bg-gradient-to-br from-orange-400 to-amber-300 text-amber-950 font-medium rounded-tr-sm'
+          : 'glass text-[var(--text-main)] rounded-tl-sm border border-orange-200/35'
       }`}>
         {message.text}
       </div>

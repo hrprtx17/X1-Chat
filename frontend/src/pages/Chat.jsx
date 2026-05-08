@@ -50,19 +50,19 @@ export default function Chat() {
 
   return (
     <div className="app-shell min-h-screen flex flex-col">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#131a2f', color: '#fff', border: '1px solid rgba(134,171,255,0.3)' } }} />
+      <Toaster position="top-center" toastOptions={{ style: { background: 'var(--surface-strong)', color: 'var(--text-main)', border: '1px solid var(--border-soft)' } }} />
       <Navbar />
 
       <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-6">
         <div className="glass-card p-4 mb-4 flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-300/10 border border-indigo-200/20 rounded-xl flex items-center justify-center">
-            <Sparkles size={18} className="text-indigo-100" />
+          <div className="w-10 h-10 bg-orange-200/35 border border-orange-300/30 rounded-xl flex items-center justify-center">
+            <Sparkles size={18} className="text-[var(--brand)]" />
           </div>
           <div>
-            <h2 className="text-white font-semibold text-sm">X1Chat AI Assistant</h2>
+            <h2 className="text-[var(--text-main)] font-semibold text-sm">X1Chat AI Assistant</h2>
             <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" />
-              <span className="text-emerald-200 text-xs">Online and ready</span>
+              <div className="w-1.5 h-1.5 bg-[var(--brand)] rounded-full animate-pulse" />
+              <span className="text-[var(--text-soft)] text-xs">Online and ready</span>
             </div>
           </div>
         </div>
@@ -80,13 +80,13 @@ export default function Chat() {
           ))}
           {loading && (
             <div className="flex gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-slate-900/80 border border-indigo-200/20 flex items-center justify-center flex-shrink-0">
-                <Sparkles size={14} className="text-indigo-100" />
+              <div className="w-8 h-8 rounded-full glass border border-orange-200/40 flex items-center justify-center flex-shrink-0">
+                <Sparkles size={14} className="text-[var(--brand)]" />
               </div>
-              <div className="glass px-4 py-3 rounded-2xl rounded-tl-sm border border-white/10">
+              <div className="glass px-4 py-3 rounded-2xl rounded-tl-sm border border-orange-200/40">
                 <div className="flex gap-1 items-center h-4">
                   {[0, 1, 2].map(i => (
-                    <span key={i} className="w-1.5 h-1.5 bg-indigo-200 rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
+                    <span key={i} className="w-1.5 h-1.5 bg-[var(--brand)] rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
                   ))}
                 </div>
               </div>
@@ -101,7 +101,7 @@ export default function Chat() {
               <button
                 key={i}
                 onClick={() => sendMessage(s)}
-                className="glass text-left px-3 py-2.5 rounded-xl text-xs text-slate-300 hover:text-white hover:border-indigo-200/30 transition-all"
+                className="glass text-left px-3 py-2.5 rounded-xl text-xs text-[var(--text-soft)] hover:text-[var(--text-main)] hover:border-orange-300/50 transition-all tap"
               >
                 {s}
               </button>
@@ -117,14 +117,14 @@ export default function Chat() {
               onChange={e => setInput(e.target.value)}
               onKeyPress={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
               placeholder="Ask anything about your support issue..."
-              className="flex-1 bg-transparent text-white placeholder-slate-500 text-sm focus:outline-none px-2"
+              className="flex-1 bg-transparent text-[var(--text-main)] placeholder-[var(--text-soft)] text-sm focus:outline-none px-2"
             />
             <button
               onClick={() => sendMessage()}
               disabled={loading || !input.trim()}
-              className="w-9 h-9 bg-gradient-to-br from-indigo-300 to-emerald-200 rounded-xl flex items-center justify-center disabled:opacity-40 transition-all flex-shrink-0"
+              className="w-9 h-9 bg-gradient-to-br from-orange-400 to-amber-300 rounded-xl flex items-center justify-center disabled:opacity-40 transition-all flex-shrink-0 tap"
             >
-              <Send size={15} className="text-slate-900" />
+              <Send size={15} className="text-amber-950" />
             </button>
           </div>
         </div>

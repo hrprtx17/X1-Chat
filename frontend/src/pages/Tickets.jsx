@@ -44,18 +44,18 @@ export default function Tickets() {
 
   return (
     <div className="app-shell min-h-screen">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#131a2f', color: '#fff', border: '1px solid rgba(134,171,255,0.3)' } }} />
+      <Toaster position="top-center" toastOptions={{ style: { background: 'var(--surface-strong)', color: 'var(--text-main)', border: '1px solid var(--border-soft)' } }} />
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-semibold text-white tracking-tight">Support Tickets</h1>
-            <p className="text-slate-400 text-sm mt-1">{tickets.length} total tickets in workspace</p>
+            <h1 className="text-3xl font-semibold text-[var(--text-main)] tracking-tight">Support Tickets</h1>
+            <p className="text-[var(--text-soft)] text-sm mt-1">{tickets.length} total tickets in workspace</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="btn-primary flex items-center gap-2 text-sm py-2.5 px-5"
+            className="btn-primary flex items-center gap-2 text-sm py-2.5 px-5 tap"
           >
             <Plus size={16} />
             New Ticket
@@ -72,8 +72,8 @@ export default function Tickets() {
             >
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-white font-semibold">Create New Ticket</h2>
-                  <button onClick={() => setShowForm(false)} className="text-slate-500 hover:text-white transition">
+                  <h2 className="text-[var(--text-main)] font-semibold">Create New Ticket</h2>
+                  <button onClick={() => setShowForm(false)} className="text-[var(--text-soft)] hover:text-[var(--text-main)] transition tap">
                     <X size={18} />
                   </button>
                 </div>
@@ -100,11 +100,11 @@ export default function Tickets() {
                       onChange={e => setForm({ ...form, priority: e.target.value })}
                       className="select-premium px-4 py-3 text-sm bg-transparent"
                     >
-                      <option value="low" className="bg-slate-900">Low Priority</option>
-                      <option value="medium" className="bg-slate-900">Medium Priority</option>
-                      <option value="high" className="bg-slate-900">High Priority</option>
+                      <option value="low">Low Priority</option>
+                      <option value="medium">Medium Priority</option>
+                      <option value="high">High Priority</option>
                     </select>
-                    <button type="submit" disabled={loading} className="btn-primary flex-1 py-3 text-sm disabled:opacity-50">
+                    <button type="submit" disabled={loading} className="btn-primary flex-1 py-3 text-sm disabled:opacity-50 tap">
                       {loading ? 'Creating...' : 'Create Ticket'}
                     </button>
                   </div>
@@ -116,7 +116,7 @@ export default function Tickets() {
 
         <div className="flex gap-3 mb-6">
           <div className="relative flex-1">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-soft)]" />
             <input
               type="text"
               placeholder="Search tickets..."
@@ -130,17 +130,17 @@ export default function Tickets() {
             onChange={e => setStatusFilter(e.target.value)}
             className="select-premium px-4 py-2.5 text-sm bg-transparent"
           >
-            <option value="" className="bg-slate-900">All Status</option>
-            <option value="open" className="bg-slate-900">Open</option>
-            <option value="in-progress" className="bg-slate-900">In Progress</option>
-            <option value="resolved" className="bg-slate-900">Resolved</option>
-            <option value="closed" className="bg-slate-900">Closed</option>
+            <option value="">All Status</option>
+            <option value="open">Open</option>
+            <option value="in-progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
           </select>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {tickets.length === 0 ? (
-            <div className="col-span-2 xl:col-span-3 text-center py-16 text-slate-500 glass-card">
+            <div className="col-span-2 xl:col-span-3 text-center py-16 text-[var(--text-soft)] glass-card">
               <Filter size={40} className="mx-auto mb-3 opacity-30" />
               <p>No tickets found. Create your first ticket!</p>
             </div>
