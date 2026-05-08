@@ -1,5 +1,3 @@
-import CountUp from 'react-countup';
-
 export default function StatCard({ label, value, suffix = '', icon: Icon, color = 'primary' }) {
   const colors = {
     primary: 'text-indigo-200 bg-indigo-400/15 border-indigo-300/30',
@@ -19,7 +17,7 @@ export default function StatCard({ label, value, suffix = '', icon: Icon, color 
         )}
       </div>
       <div className="text-3xl font-semibold text-white">
-        <CountUp end={typeof value === 'number' ? value : 0} duration={2} />
+        {typeof value === 'number' ? value : 0}
         {suffix}
       </div>
     </div>
