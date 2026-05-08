@@ -41,7 +41,7 @@ export default function Navbar() {
           <span className="font-semibold tracking-tight text-[var(--text-main)] text-lg">X1Chat</span>
         </button>
 
-        <div className="hidden md:flex items-center gap-1 p-1 rounded-xl border border-orange-200/40 bg-white/40">
+        <div className="hidden md:flex items-center gap-1 p-1 rounded-xl border border-orange-200/40 bg-white/60 dark:bg-white/20">
           {links.map(({ path, label, icon: Icon }) => (
             <button
               key={path}
