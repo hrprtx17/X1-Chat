@@ -1,4 +1,4 @@
-import { Zap, User } from 'lucide-react';
+import { Bot, User } from 'lucide-react';
 
 export default function ChatBubble({ message }) {
   const isUser = message.role === 'user';
@@ -7,7 +7,7 @@ export default function ChatBubble({ message }) {
   if (isSystem) {
     return (
       <div className="flex justify-center my-2">
-        <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 px-4 py-2 rounded-xl text-xs max-w-md text-center">
+        <div className="bg-amber-400/10 border border-amber-300/20 text-amber-200 px-4 py-2 rounded-xl text-xs max-w-md text-center">
           {message.text}
         </div>
       </div>
@@ -17,14 +17,14 @@ export default function ChatBubble({ message }) {
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} mb-4`}>
       <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
-        isUser ? 'bg-primary/20 border border-primary/30' : 'bg-dark-card border border-[#00D97E]/20'
+        isUser ? 'bg-indigo-400/20 border border-indigo-300/30' : 'bg-slate-900/80 border border-cyan-200/20'
       }`}>
-        {isUser ? <User size={14} className="text-primary" /> : <Zap size={14} className="text-primary" />}
+        {isUser ? <User size={14} className="text-indigo-200" /> : <Bot size={14} className="text-cyan-200" />}
       </div>
       <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
         isUser
-          ? 'bg-primary text-dark font-medium rounded-tr-sm'
-          : 'glass text-gray-200 rounded-tl-sm'
+          ? 'bg-gradient-to-br from-indigo-300 to-emerald-200 text-slate-900 font-medium rounded-tr-sm'
+          : 'glass text-slate-100 rounded-tl-sm border border-white/10'
       }`}>
         {message.text}
       </div>
