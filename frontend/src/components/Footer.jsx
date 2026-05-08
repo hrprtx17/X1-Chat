@@ -1,4 +1,4 @@
-import { Zap, Github, Twitter, Linkedin } from 'lucide-react';
+import { Zap, GitBranch, ExternalLink, Link } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -39,13 +39,13 @@ export default function Footer() {
             <h4 className="text-white font-medium mb-4 text-sm">Connect</h4>
             <div className="flex gap-3">
               <a href="https://github.com" className="w-9 h-9 glass rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/30 transition">
-                <Github size={16} />
+                <GitBranch size={16} />
               </a>
               <a href="https://twitter.com" className="w-9 h-9 glass rounded-lg flex items-center justify-center text-gray-400 hover:text-primary transition">
-                <Twitter size={16} />
+                <ExternalLink size={16} />
               </a>
               <a href="https://linkedin.com" className="w-9 h-9 glass rounded-lg flex items-center justify-center text-gray-400 hover:text-primary transition">
-                <Linkedin size={16} />
+                <Link size={16} />
               </a>
             </div>
           </div>

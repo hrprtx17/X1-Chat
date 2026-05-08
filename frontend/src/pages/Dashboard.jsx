@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { MessageSquare, Ticket, Users, TrendingUp, AlertTriangle, CheckCircle, Plus, Trash2, Edit } from 'lucide-react';
+import { MessageSquare, Ticket, Users, AlertTriangle, Plus, Trash2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import StatCard from '../components/StatCard';
 import API from '../utils/axios';
@@ -17,16 +17,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-  useEffect(() => {
-    fetchStats();
-    fetchFaqs();
-  }, []);
-
   const fetchStats = async () => {
     try {
       const { data } = await API.get('/chat/stats');
       setStats(data);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load stats');
     }
     setLoading(false);
@@ -36,8 +31,19 @@ export default function Dashboard() {
     try {
       const { data } = await API.get('/faqs');
       setFaqs(data);
-    } catch (err) { console.log(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  useEffect(() => {
+    const loadData = async () => {
+      await fetchStats();
+      await fetchFaqs();
+    };
+
+    loadData();
+  }, []);
 
   const createFaq = async (e) => {
     e.preventDefault();
@@ -57,7 +63,7 @@ export default function Dashboard() {
       await API.delete(`/faqs/${id}`);
       toast.success('FAQ deleted!');
       fetchFaqs();
-    } catch (err) {
+    } catch {
       toast.error('Failed to delete');
     }
   };
