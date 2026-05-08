@@ -52,16 +52,24 @@ ${matchingFAQ ? `Relevant FAQ — Q: ${matchingFAQ.question} A: ${matchingFAQ.an
 Keep responses under 80 words.
 If issue is complex or unresolved, suggest creating a support ticket.`;
 
-    const result = await getGroqClient().chat.completions.create({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-      model: 'llama-3.1-8b-instant',
-      max_tokens: 200
-    });
+    let botReply = 'Sorry, I could not process that. Please try again.';
+    let groqError = null;
 
-    const botReply = result.choices[0]?.message?.content || 'Sorry, I could not process that. Please try again.';
+    try {
+      const result = await getGroqClient().chat.completions.create({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message }
+        ],
+        model: 'llama-3.1-8b-instant',
+        max_tokens: 200
+      });
+      botReply = result.choices[0]?.message?.content || botReply;
+    } catch (groqErr) {
+      console.error('Groq API Error:', groqErr.message);
+      groqError = groqErr.message;
+      botReply = 'I apologize, the AI service is temporarily unavailable. Please try again later or create a support ticket.';
+    }
 
     let ticketCreated = null;
     if (escalate) {
