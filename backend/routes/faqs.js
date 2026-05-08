@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const FAQ = require('../models/FAQ');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+const FAQ = require('../models/faq');
+const { protect, adminOnly } = require('../middleware/authmiddleware');
 
 router.get('/', async (req, res) => {
   try {

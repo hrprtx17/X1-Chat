@@ -30,13 +30,20 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('✅ MongoDB Connected');
-    app.listen(process.env.PORT || 5000, () => {
-      console.log(`🚀 X1Chat Server running on port ${process.env.PORT || 5000}`);
+const port = process.env.PORT || 5000;
+const mongoUri = process.env.MONGO_URI;
+
+if (!mongoUri) {
+  console.error('Missing MONGO_URI. Set the MONGO_URI environment variable before starting the backend.');
+} else {
+  mongoose.connect(mongoUri)
+    .then(() => {
+      console.log('✅ MongoDB Connected');
+      app.listen(port, () => {
+        console.log(`🚀 X1Chat Server running on port ${port}`);
+      });
+    })
+    .catch((err) => {
+      console.error('❌ MongoDB Error:', err.message);
     });
-  })
-  .catch((err) => {
-    console.log('❌ MongoDB Error:', err.message);
-  });
+}

@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const Groq = require('groq-sdk');
-const Chat = require('../models/Chat');
-const Ticket = require('../models/Ticket');
-const FAQ = require('../models/FAQ');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+const Chat = require('../models/chat');
+const Ticket = require('../models/ticket');
+const FAQ = require('../models/faq');
+const { protect, adminOnly } = require('../middleware/authmiddleware');
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const getGroqClient = () => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error('GROQ_API_KEY not configured');
+  }
+  return new Groq({ apiKey });
+};
 
 const detectIntent = (message) => {
   const msg = message.toLowerCase();
@@ -46,7 +52,7 @@ ${matchingFAQ ? `Relevant FAQ — Q: ${matchingFAQ.question} A: ${matchingFAQ.an
 Keep responses under 80 words.
 If issue is complex or unresolved, suggest creating a support ticket.`;
 
-    const result = await groq.chat.completions.create({
+    const result = await getGroqClient().chat.completions.create({
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: message }

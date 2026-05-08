@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Ticket = require('../models/Ticket');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+const Ticket = require('../models/ticket');
+const { protect, adminOnly } = require('../middleware/authmiddleware');
 
 // User - get my tickets
 router.get('/', protect, async (req, res) => {
