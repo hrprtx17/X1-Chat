@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, Filter, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
@@ -14,9 +14,7 @@ export default function Tickets() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  useEffect(() => { fetchTickets(); }, [search, statusFilter]);
-
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     try {
       const params = {};
       if (search) params.search = search;
@@ -24,7 +22,10 @@ export default function Tickets() {
       const { data } = await API.get('/tickets', { params });
       setTickets(data);
     } catch (err) { console.log(err); }
-  };
+  }, [search, statusFilter]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { fetchTickets(); }, [fetchTickets]);
 
   const createTicket = async (e) => {
     e.preventDefault();
@@ -42,16 +43,15 @@ export default function Tickets() {
   };
 
   return (
-    <div className="min-h-screen bg-dark">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#0D0D14', color: '#fff', border: '1px solid rgba(0,217,126,0.2)' } }} />
+    <div className="app-shell min-h-screen">
+      <Toaster position="top-center" toastOptions={{ style: { background: '#131a2f', color: '#fff', border: '1px solid rgba(134,171,255,0.3)' } }} />
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">Support Tickets</h1>
-            <p className="text-gray-500 text-sm mt-1">{tickets.length} tickets total</p>
+            <h1 className="text-3xl font-semibold text-white tracking-tight">Support Tickets</h1>
+            <p className="text-slate-400 text-sm mt-1">{tickets.length} total tickets in workspace</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
@@ -62,7 +62,6 @@ export default function Tickets() {
           </button>
         </div>
 
-        {/* Create Form */}
         <AnimatePresence>
           {showForm && (
             <motion.div
@@ -74,7 +73,7 @@ export default function Tickets() {
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-white font-semibold">Create New Ticket</h2>
-                  <button onClick={() => setShowForm(false)} className="text-gray-500 hover:text-white transition">
+                  <button onClick={() => setShowForm(false)} className="text-slate-500 hover:text-white transition">
                     <X size={18} />
                   </button>
                 </div>
@@ -84,7 +83,7 @@ export default function Tickets() {
                     placeholder="Ticket title"
                     value={form.title}
                     onChange={e => setForm({ ...form, title: e.target.value })}
-                    className="w-full glass rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary/40"
+                    className="input-premium px-4 py-3 placeholder-slate-500 text-sm"
                     required
                   />
                   <textarea
@@ -92,18 +91,18 @@ export default function Tickets() {
                     value={form.description}
                     onChange={e => setForm({ ...form, description: e.target.value })}
                     rows={3}
-                    className="w-full glass rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary/40 resize-none"
+                    className="textarea-premium px-4 py-3 placeholder-slate-500 text-sm resize-none"
                     required
                   />
                   <div className="flex gap-3">
                     <select
                       value={form.priority}
                       onChange={e => setForm({ ...form, priority: e.target.value })}
-                      className="glass rounded-xl px-4 py-3 text-white text-sm focus:outline-none bg-transparent"
+                      className="select-premium px-4 py-3 text-sm bg-transparent"
                     >
-                      <option value="low" className="bg-dark-card">Low Priority</option>
-                      <option value="medium" className="bg-dark-card">Medium Priority</option>
-                      <option value="high" className="bg-dark-card">High Priority</option>
+                      <option value="low" className="bg-slate-900">Low Priority</option>
+                      <option value="medium" className="bg-slate-900">Medium Priority</option>
+                      <option value="high" className="bg-slate-900">High Priority</option>
                     </select>
                     <button type="submit" disabled={loading} className="btn-primary flex-1 py-3 text-sm disabled:opacity-50">
                       {loading ? 'Creating...' : 'Create Ticket'}
@@ -115,35 +114,33 @@ export default function Tickets() {
           )}
         </AnimatePresence>
 
-        {/* Filters */}
         <div className="flex gap-3 mb-6">
           <div className="relative flex-1">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               type="text"
               placeholder="Search tickets..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full glass rounded-xl pl-9 pr-4 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary/40"
+              className="input-premium pl-9 pr-4 py-2.5 placeholder-slate-500 text-sm"
             />
           </div>
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="glass rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none bg-transparent"
+            className="select-premium px-4 py-2.5 text-sm bg-transparent"
           >
-            <option value="" className="bg-dark-card">All Status</option>
-            <option value="open" className="bg-dark-card">Open</option>
-            <option value="in-progress" className="bg-dark-card">In Progress</option>
-            <option value="resolved" className="bg-dark-card">Resolved</option>
-            <option value="closed" className="bg-dark-card">Closed</option>
+            <option value="" className="bg-slate-900">All Status</option>
+            <option value="open" className="bg-slate-900">Open</option>
+            <option value="in-progress" className="bg-slate-900">In Progress</option>
+            <option value="resolved" className="bg-slate-900">Resolved</option>
+            <option value="closed" className="bg-slate-900">Closed</option>
           </select>
         </div>
 
-        {/* Tickets List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {tickets.length === 0 ? (
-            <div className="col-span-2 text-center py-16 text-gray-600">
+            <div className="col-span-2 xl:col-span-3 text-center py-16 text-slate-500 glass-card">
               <Filter size={40} className="mx-auto mb-3 opacity-30" />
               <p>No tickets found. Create your first ticket!</p>
             </div>

@@ -27,8 +27,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-dark flex items-center justify-center px-4">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#0D0D14', color: '#fff', border: '1px solid rgba(0,217,126,0.2)' } }} />
+    <div className="app-shell min-h-screen flex items-center justify-center px-4">
+      <Toaster position="top-center" toastOptions={{ style: { background: '#131a2f', color: '#fff', border: '1px solid rgba(134,171,255,0.3)' } }} />
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl" />
@@ -41,56 +41,56 @@ export default function Register() {
       >
         <div className="glass-card p-8 glow-sm">
           <div className="flex items-center gap-2 mb-8">
-            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
-              <Zap size={18} className="text-dark" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-300 to-emerald-200 flex items-center justify-center">
+              <Zap size={18} className="text-slate-900" />
             </div>
-            <span className="font-bold text-white text-xl">X1Chat</span>
+            <span className="font-semibold text-white text-xl tracking-tight">X1Chat</span>
           </div>
 
           <h1 className="text-2xl font-bold text-white mb-1">Create account</h1>
-          <p className="text-gray-500 mb-8 text-sm">Join X1Chat for free</p>
+          <p className="text-slate-400 mb-8 text-sm">Create your workspace and start supporting customers with AI.</p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="text-xs text-gray-500 mb-2 block uppercase tracking-wider">Full Name</label>
+              <label className="text-xs text-slate-400 mb-2 block uppercase tracking-wider">Full Name</label>
               <div className="relative">
-                <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   placeholder="Harpreet Singh"
-                  className="w-full glass rounded-xl px-4 py-3 pl-11 text-white placeholder-gray-600 focus:outline-none focus:border-primary/40 text-sm transition"
+                  className="input-premium px-4 py-3 pl-11 placeholder-slate-500 text-sm"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-gray-500 mb-2 block uppercase tracking-wider">Email</label>
+              <label className="text-xs text-slate-400 mb-2 block uppercase tracking-wider">Email</label>
               <div className="relative">
-                <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="email"
                   value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   placeholder="you@example.com"
-                  className="w-full glass rounded-xl px-4 py-3 pl-11 text-white placeholder-gray-600 focus:outline-none focus:border-primary/40 text-sm transition"
+                  className="input-premium px-4 py-3 pl-11 placeholder-slate-500 text-sm"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-gray-500 mb-2 block uppercase tracking-wider">Password</label>
+              <label className="text-xs text-slate-400 mb-2 block uppercase tracking-wider">Password</label>
               <div className="relative">
-                <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="password"
                   value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   placeholder="••••••••"
-                  className="w-full glass rounded-xl px-4 py-3 pl-11 text-white placeholder-gray-600 focus:outline-none focus:border-primary/40 text-sm transition"
+                  className="input-premium px-4 py-3 pl-11 placeholder-slate-500 text-sm"
                   required
                 />
               </div>
@@ -101,9 +101,9 @@ export default function Register() {
             </button>
           </form>
 
-          <p className="text-gray-600 text-sm text-center mt-6">
+          <p className="text-slate-500 text-sm text-center mt-6">
             Have account?{' '}
-            <Link to="/login" className="text-primary hover:text-primary-light transition">Sign in</Link>
+            <Link to="/login" className="text-indigo-200 hover:text-indigo-100 transition">Sign in</Link>
           </p>
         </div>
       </motion.div>
