@@ -32,25 +32,31 @@ app.set('trust proxy', 1);
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  /\.vercel\.app$/, // Standard Vercel subdomains
-  /--.*\.vercel\.app$/, // Vercel preview deployments
-  process.env.FRONTEND_URL, // Explicitly allowed production domain
-].filter(Boolean);
+  'https://x1-chat-app.vercel.app', // Add your actual Vercel domain here
+  /\.vercel\.app$/,
+  /--.*\.vercel\.app$/
+];
 
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
-    
+
     const isAllowed = allowedOrigins.some(pattern => {
       if (pattern instanceof RegExp) return pattern.test(origin);
       return pattern === origin;
     });
 
-    if (isAllowed || process.env.NODE_ENV !== 'production') {
+    if (isAllowed) {
       callback(null, true);
     } else {
-      console.warn(`⚠️ CORS blocked for origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      // In development, allow everything to prevent blockers
+      if (process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        console.warn(`⚠️ CORS blocked for origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true,
