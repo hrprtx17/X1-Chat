@@ -7,7 +7,7 @@ export default function FAQ({ isDark }) {
   const [faqs, setFaqs] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ question: '', answer: '', category: 'general', active: true });
+  const [form, setForm] = useState({ question: '', answer: '', category: 'general', isActive: true });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function FAQ({ isDark }) {
       question: faq.question,
       answer: faq.answer,
       category: faq.category || 'general',
-      active: faq.active !== false
+      isActive: faq.isActive !== false
     });
     setEditingId(faq._id);
     setShowModal(true);
@@ -72,7 +72,7 @@ export default function FAQ({ isDark }) {
 
   const handleToggleActive = async (id, currentActive) => {
     try {
-      await API.put(`/faqs/${id}`, { active: !currentActive });
+      await API.put(`/faqs/${id}`, { isActive: !currentActive });
       fetchFAQs();
     } catch (error) {
       toast.error('Failed to update FAQ');
@@ -82,7 +82,7 @@ export default function FAQ({ isDark }) {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingId(null);
-    setForm({ question: '', answer: '', category: 'general', active: true });
+    setForm({ question: '', answer: '', category: 'general', isActive: true });
   };
 
   return (
@@ -131,15 +131,15 @@ export default function FAQ({ isDark }) {
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={() => handleToggleActive(faq._id, faq.active)}
+                        onClick={() => handleToggleActive(faq._id, faq.isActive)}
                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          faq.active !== false
+                          faq.isActive !== false
                             ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                             : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
                         }`}
                       >
                         <ToggleRight size={12} />
-                        {faq.active !== false ? 'Active' : 'Inactive'}
+                        {faq.isActive !== false ? 'Active' : 'Inactive'}
                       </button>
                     </td>
                     <td className="px-6 py-4">
@@ -230,8 +230,7 @@ export default function FAQ({ isDark }) {
                   <option value="billing">Billing</option>
                   <option value="technical">Technical</option>
                   <option value="account">Account</option>
-                  <option value="shipping">Shipping</option>
-                  <option value="returns">Returns</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
 
@@ -239,8 +238,8 @@ export default function FAQ({ isDark }) {
                 <input
                   type="checkbox"
                   id="active"
-                  checked={form.active}
-                  onChange={e => setForm({ ...form, active: e.target.checked })}
+                  checked={form.isActive}
+                  onChange={e => setForm({ ...form, isActive: e.target.checked })}
                   className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
                 />
                 <label htmlFor="active" className="text-sm font-medium text-gray-700 dark:text-gray-300">

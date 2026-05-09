@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import API from '../utils/axios';
 import { 
   Send, 
   Bot, 
@@ -36,10 +36,10 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const res = await axios.post('/api/chat', { 
-        messages: [...messages, userMsg].map(m => ({ role: m.role, content: m.content })) 
+      const res = await API.post('/chat', { 
+        message: input // Backend expects 'message' string
       });
-      setMessages(prev => [...prev, { role: 'assistant', content: res.data.content }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: res.data.reply }]); // Backend returns 'reply'
     } catch (err) {
       toast.error('AI is currently unavailable');
       setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I encountered an error. Please try again later." }]);

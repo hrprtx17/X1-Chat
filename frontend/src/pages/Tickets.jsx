@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../utils/axios';
 import { 
   Search, 
   Filter, 
@@ -22,7 +22,7 @@ export default function Tickets() {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const res = await axios.get('/api/tickets');
+        const res = await API.get('/tickets');
         setTickets(res.data);
       } catch (err) {
         console.error(err);

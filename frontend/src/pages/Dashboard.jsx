@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../utils/axios';
 import { 
   Users, 
   MessageSquare, 
@@ -42,7 +42,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get('/api/chat/stats');
+        const res = await API.get('/chat/stats');
         setStats(res.data);
       } catch (err) {
         // Fallback or error
