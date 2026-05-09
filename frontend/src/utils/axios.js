@@ -1,8 +1,8 @@
 import axios from 'axios';
 
+// Direct API configuration - Frontend calls Render backend directly
 const API = axios.create({
-  // prioritize VITE_API_URL, then /api for Vercel proxy, then localhost for dev
-  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api'),
+  baseURL: import.meta.env.VITE_API_URL || 'https://x1-chat-app.onrender.com/api',
   timeout: 30000,
   withCredentials: true,
 });

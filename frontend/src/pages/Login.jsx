@@ -63,28 +63,12 @@ export default function Login() {
           </div>
 
           <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Welcome Back</h2>
-          <div className="mt-2 flex items-center gap-2">
-            <p className="text-sm text-gray-500 font-medium">
-              New here?{' '}
-              <Link to="/register" className="text-primary hover:text-primary-600 font-bold transition-colors">
-                Create an account
-              </Link>
-            </p>
-            <span className="text-gray-300">|</span>
-            <button 
-              onClick={async () => {
-                try {
-                  const { data } = await API.get('/');
-                  toast.success(`Server Connected: ${data.message}`);
-                } catch (e) {
-                  toast.error(`Server Unreachable: ${e.message}`);
-                }
-              }}
-              className="text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-primary transition-colors"
-            >
-              Check Status
-            </button>
-          </div>
+          <p className="mt-3 text-sm text-gray-500 font-medium">
+            New here?{' '}
+            <Link to="/register" className="text-primary hover:text-primary-600 font-bold transition-colors">
+              Create an account
+            </Link>
+          </p>
 
           <form onSubmit={handleSubmit} className="mt-10 space-y-6">
             <div className="space-y-2">
