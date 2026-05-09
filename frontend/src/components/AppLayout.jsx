@@ -8,12 +8,12 @@ export default function AppLayout({ children, isDark, toggleTheme }) {
   const { user } = useAuth();
 
   const getInitials = (name) => {
-    return name
-      ?.split(' ')
+    return (name ?? 'User')
+      .split(' ')
       .map((n) => n[0])
       .join('')
       .toUpperCase()
-      .slice(0, 2) || 'U';
+      .slice(0, 2);
   };
 
   return (

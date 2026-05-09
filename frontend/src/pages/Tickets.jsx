@@ -154,7 +154,7 @@ export default function Tickets() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold">
-                        {ticket.customer?.[0] || 'U'}
+                        {(ticket.customer ?? 'User').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                       </div>
                       <span className="text-gray-700 dark:text-gray-300">{ticket.customer}</span>
                     </div>

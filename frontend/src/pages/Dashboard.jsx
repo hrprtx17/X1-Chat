@@ -75,7 +75,7 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back, {user?.name?.split(' ')[0] || 'User'} 👋</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back, {user?.name?.split(' ')[0] ?? 'User'} 👋</h1>
           <p className="text-gray-500 mt-1">Here's what's happening with your support channels today.</p>
         </div>
         <button className="btn-primary">
@@ -231,7 +231,7 @@ export default function Dashboard() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold">
-                        {ticket.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                        {(ticket.name ?? 'User').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">{ticket.name}</p>

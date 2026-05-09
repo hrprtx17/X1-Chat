@@ -5,8 +5,8 @@ import API from '../utils/axios';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(getUser());
-  const [token, setToken] = useState(getToken());
+  const [user, setUser] = useState(getUser() || null);
+  const [token, setToken] = useState(getToken() || null);
 
   const login = async (email, password) => {
     const res = await API.post('/auth/login', { email, password });

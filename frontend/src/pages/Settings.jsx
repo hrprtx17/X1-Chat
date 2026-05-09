@@ -18,12 +18,12 @@ export default function Settings({ isDark, toggleTheme }) {
   });
 
   const getInitials = (name) => {
-    return name
-      ?.split(' ')
+    return (name ?? 'User')
+      .split(' ')
       .map((n) => n[0])
       .join('')
       .toUpperCase()
-      .slice(0, 2) || 'U';
+      .slice(0, 2);
   };
 
   const handleCopyEmail = () => {
