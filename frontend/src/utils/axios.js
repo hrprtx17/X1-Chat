@@ -1,9 +1,14 @@
 import axios from 'axios';
 
+// In production, we prefer relative paths to leverage the Vercel proxy
+// This avoids CORS issues and simplifies deployment config
+const isProd = import.meta.env.PROD;
+const defaultBaseURL = isProd ? '/api' : 'http://localhost:5000/api';
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://x1-chat-app.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL || defaultBaseURL,
   timeout: 30000,
-  withCredentials: true, // Required for sending cookies in production
+  withCredentials: true,
 });
 
 API.interceptors.request.use((req) => {
@@ -13,41 +18,34 @@ API.interceptors.request.use((req) => {
       req.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Log requests in development
     if (import.meta.env.DEV) {
       console.log(`🚀 ${req.method?.toUpperCase()} ${req.url}`);
     }
   } catch (e) {
-    console.error('Token read error:', e);
+    console.error('Auth token interceptor error:', e);
   }
   return req;
-}, (error) => {
-  return Promise.reject(error);
-});
+}, (error) => Promise.reject(error));
 
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized errors (expired or invalid tokens)
+    // Handle session expiry
     if (error.response?.status === 401) {
-      try {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        
-        // Redirect to login if not already there
-        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-          console.warn('Session expired, redirecting to login...');
-          window.location.href = '/login';
-        }
-      } catch (e) {
-        console.error('Session cleanup error:', e);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.href = '/login';
       }
     }
     
-    // Log detailed errors in development
-    if (import.meta.env.DEV) {
-      console.error('❌ API Error:', error.response?.data || error.message);
-    }
+    // Log failures in production for easier debugging via browser console
+    console.error('❌ API Error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      data: error.response?.data
+    });
     
     return Promise.reject(error);
   }

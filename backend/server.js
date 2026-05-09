@@ -29,12 +29,13 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  /\.vercel\.app$/, // Allow all Vercel deployments
-];
+  /\.vercel\.app$/, // Standard Vercel subdomains
+  /--.*\.vercel\.app$/, // Vercel preview deployments
+  process.env.FRONTEND_URL, // Explicitly allowed production domain
+].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
     const isAllowed = allowedOrigins.some(pattern => {
@@ -42,7 +43,7 @@ app.use(cors({
       return pattern === origin;
     });
 
-    if (isAllowed) {
+    if (isAllowed || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
       console.warn(`⚠️ CORS blocked for origin: ${origin}`);
@@ -51,7 +52,8 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Cookie'],
+  exposedHeaders: ['Set-Cookie']
 }));
 
 app.use(cookieParser());
