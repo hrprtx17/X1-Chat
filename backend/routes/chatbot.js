@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Groq = require('groq-sdk');
-const Chat = require('../models/chat');
-const Ticket = require('../models/ticket');
-const FAQ = require('../models/faq');
+const Chat = require('../models/Chat');
+const Ticket = require('../models/Ticket');
+const FAQ = require('../models/FAQ');
 const { protect, adminOnly } = require('../middleware/authmiddleware');
 
 const getGroqClient = () => {
