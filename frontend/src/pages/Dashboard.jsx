@@ -1,310 +1,274 @@
-import { useEffect, useState } from 'react';
-import { Plus, TrendingUp, Bot, Smile, Clock, Zap, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import API from '../utils/axios';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { 
+  Users, 
+  MessageSquare, 
+  Ticket, 
+  TrendingUp, 
+  ArrowUpRight, 
+  ArrowDownRight,
+  MoreVertical,
+  Plus
+} from 'lucide-react';
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  AreaChart,
+  Area
+} from 'recharts';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import StatCard from '../components/StatCard';
 
-export default function Dashboard({ isDark }) {
+export default function Dashboard() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [stats, setStats] = useState({
-    openTickets: 0,
-    totalChats: 0,
-    last7Days: []
-  });
-  const [tickets, setTickets] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  const chartData = [
+    { name: 'Mon', volume: 40, resolved: 24 },
+    { name: 'Tue', volume: 55, resolved: 38 },
+    { name: 'Wed', volume: 48, resolved: 42 },
+    { name: 'Thu', volume: 70, resolved: 55 },
+    { name: 'Fri', volume: 62, resolved: 48 },
+    { name: 'Sat', volume: 35, resolved: 30 },
+    { name: 'Sun', volume: 45, resolved: 38 },
+  ];
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStats = async () => {
       try {
-        const [statsRes, ticketsRes] = await Promise.all([
-          API.get('/chat/stats'),
-          API.get('/tickets/all')
-        ]);
-
-        setStats(statsRes.data || {
-          openTickets: 0,
-          totalChats: 0,
-          last7Days: []
-        });
-
-        if (Array.isArray(ticketsRes.data)) {
-          setTickets(ticketsRes.data.slice(0, 5));
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        // Use mock data for demo
-        setStats({
-          openTickets: 12,
-          totalChats: 145,
-          last7Days: [
-            { day: 'Mon', chats: 45 },
-            { day: 'Tue', chats: 52 },
-            { day: 'Wed', chats: 48 },
-            { day: 'Thu', chats: 61 },
-            { day: 'Fri', chats: 55 },
-            { day: 'Sat', chats: 67 },
-            { day: 'Sun', chats: 72 }
-          ]
-        });
-        setTickets([]);
+        const res = await axios.get('/api/chat/stats');
+        setStats(res.data);
+      } catch (err) {
+        // Fallback or error
+        console.error(err);
       } finally {
+        setLoading(false);
       }
     };
-
-    fetchData();
+    fetchStats();
   }, []);
 
-  const getStatusColor = (status) => {
-    const colors = {
-      open: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-      'in-progress': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-      resolved: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
-      closed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-    };
-    return colors[status] || colors.open;
-  };
-
-  const getPriorityColor = (priority) => {
-    const colors = {
-      high: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-      medium: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-      low: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
-      urgent: 'bg-red-200 text-red-900 dark:bg-red-900/50 dark:text-red-300'
-    };
-    return colors[priority] || colors.medium;
-  };
-
-  const formatDate = (date) => {
-    const d = new Date(date);
-    const now = new Date();
-    const diff = now - d;
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    if (hours < 1) return 'just now';
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    if (days < 7) return `${days}d ago`;
-    return d.toLocaleDateString();
-  };
-
-  const firstName = user?.name?.split(' ')[0] || 'User';
+  const StatCard = ({ title, value, change, icon: Icon, color }) => (
+    <div className="card p-6">
+      <div className="flex justify-between items-start mb-4">
+        <div className={`p-2 rounded-lg bg-${color}-50 text-${color}-600 dark:bg-${color}-900/20 dark:text-${color}-400`}>
+          <Icon size={20} />
+        </div>
+        <div className={`flex items-center text-xs font-medium ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {change >= 0 ? <ArrowUpRight size={14} className="mr-1" /> : <ArrowDownRight size={14} className="mr-1" />}
+          {Math.abs(change)}%
+        </div>
+      </div>
+      <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
+      <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-8">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            Welcome back, {firstName} 👋
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Here's what's happening across your support today.
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back, {user?.name.split(' ')[0]} 👋</h1>
+          <p className="text-gray-500 mt-1">Here's what's happening with your support channels today.</p>
         </div>
-        <button
-          onClick={() => navigate('/tickets')}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
-        >
-          <Plus size={18} />
-          New ticket
+        <button className="btn-primary">
+          <Plus size={18} className="mr-2" />
+          New Ticket
         </button>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label="Open tickets"
-          value={stats.openTickets || 0}
-          icon={TrendingUp}
-          color="primary"
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard 
+          title="Open Tickets" 
+          value={stats?.openTickets || '24'} 
+          change={12} 
+          icon={Ticket} 
+          color="orange" 
         />
-        <StatCard
-          label="AI resolved (30d)"
-          value={stats.totalChats || 0}
-          icon={Bot}
-          color="blue"
+        <StatCard 
+          title="AI Resolved" 
+          value={stats?.aiResolved || '142'} 
+          change={28} 
+          icon={TrendingUp} 
+          color="green" 
         />
-        <StatCard
-          label="CSAT"
-          value="96%"
-          icon={Smile}
-          color="primary"
+        <StatCard 
+          title="Avg. Response" 
+          value="1.2m" 
+          change={-5} 
+          icon={MessageSquare} 
+          color="blue" 
         />
-        <StatCard
-          label="Avg response"
-          value="9m"
-          icon={Clock}
-          color="purple"
+        <StatCard 
+          title="Total Users" 
+          value={stats?.totalUsers || '1,284'} 
+          change={8} 
+          icon={Users} 
+          color="purple" 
         />
       </div>
 
-      {/* Charts & Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Line Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Chat volume — last 7 days
-              </h3>
-            </div>
-            <span className="inline-block px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 rounded">
-              Realtime
-            </span>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="card p-6 lg:col-span-2">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Chat Volume — Last 7 Days</h3>
+            <select className="bg-gray-50 border border-gray-200 text-sm rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary">
+              <option>Last 7 days</option>
+              <option>Last 30 days</option>
+            </select>
           </div>
-
-          {stats.last7Days && stats.last7Days.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={stats.last7Days}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#E5E7EB'} />
-                <XAxis dataKey="day" stroke={isDark ? '#9CA3AF' : '#6B7280'} />
-                <YAxis stroke={isDark ? '#9CA3AF' : '#6B7280'} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-                    border: `1px solid ${isDark ? '#374151' : '#E5E7EB'}`,
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#F97316" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#F97316" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fill: '#9ca3af' }} 
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fill: '#9ca3af' }} 
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #e5e7eb',
                     borderRadius: '8px',
-                    color: isDark ? '#F3F4F6' : '#111827'
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
                 />
-                <Line
-                  type="monotone"
-                  dataKey="chats"
-                  stroke="#F97316"
-                  dot={{ fill: '#F97316', r: 4 }}
-                  activeDot={{ r: 6 }}
+                <Area 
+                  type="monotone" 
+                  dataKey="volume" 
+                  stroke="#F97316" 
                   strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorVolume)" 
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
-          ) : (
-            <div className="h-72 flex items-center justify-center text-gray-500">
-              No data available
-            </div>
-          )}
+          </div>
         </div>
 
-        {/* AI Insights */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Zap size={20} className="text-orange-500" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              AI insights
-            </h3>
+        <div className="card p-6">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">AI Insights</h3>
+          <div className="space-y-6">
+            {[
+              { label: 'Most Common Issue', value: 'Password reset', icon: '🔑', percentage: 24 },
+              { label: 'Resolution Rate', value: '82%', icon: '📈', percentage: 82 },
+              { label: 'CSAT Score', value: '4.8/5', icon: '⭐', percentage: 96 },
+              { label: 'Active Bots', value: '12', icon: '🤖', percentage: 100 }
+            ].map((insight, i) => (
+              <div key={i}>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span>{insight.icon}</span>
+                    <span>{insight.label}</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">{insight.value}</span>
+                </div>
+                <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
+                  <div 
+                    className="bg-primary h-1.5 rounded-full" 
+                    style={{ width: `${insight.percentage}%` }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
-
-          <div className="space-y-4">
-            <div className="flex gap-3 pb-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="w-2 h-2 mt-1.5 rounded-full bg-orange-500 flex-shrink-0" />
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Password-reset queries are up +24%. Consider adding a new FAQ.
-              </p>
-            </div>
-            <div className="flex gap-3 pb-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="w-2 h-2 mt-1.5 rounded-full bg-green-500 flex-shrink-0" />
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                CSAT for billing queries rose to 97% — great work!
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <div className="w-2 h-2 mt-1.5 rounded-full bg-blue-500 flex-shrink-0" />
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                12 tickets are nearing escalation. Review soon.
-              </p>
-            </div>
+          <div className="mt-8 p-4 bg-orange-50 dark:bg-orange-900/10 rounded-lg border border-orange-100 dark:border-orange-800/30">
+            <p className="text-xs text-orange-800 dark:text-orange-300 font-medium leading-relaxed">
+              💡 Pro Tip: Customers are asking about the new billing feature. Consider updating your FAQ.
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Recent Tickets */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Recent tickets
-          </h3>
+      {/* Recent Activity */}
+      <div className="card overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Tickets</h3>
+          <button className="text-primary text-sm font-medium hover:underline">View all</button>
         </div>
-
-        {tickets && tickets.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-900/50">
-                <tr>
-                  <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    ID
-                  </th>
-                  <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    Subject
-                  </th>
-                  <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    Priority
-                  </th>
-                  <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
-                    Updated
-                  </th>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3">Customer</th>
+                <th className="px-6 py-3">Subject</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Priority</th>
+                <th className="px-6 py-3">Time</th>
+                <th className="px-6 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {[
+                { name: 'Alex Rivera', email: 'alex@example.com', sub: 'Login issues with OAuth', status: 'Open', priority: 'High', time: '2m ago' },
+                { name: 'Sarah Chen', email: 'sarah@example.com', sub: 'Billing discrepancy', status: 'Pending', priority: 'Medium', time: '15m ago' },
+                { name: 'Marcus Bell', email: 'marcus@example.com', sub: 'API Documentation link broken', status: 'Closed', priority: 'Low', time: '1h ago' }
+              ].map((ticket, i) => (
+                <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold">
+                        {ticket.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{ticket.name}</p>
+                        <p className="text-xs text-gray-500">{ticket.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{ticket.sub}</td>
+                  <td className="px-6 py-4">
+                    <span className={`badge ${
+                      ticket.status === 'Open' ? 'bg-green-100 text-green-700' : 
+                      ticket.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {ticket.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`text-xs font-medium ${
+                      ticket.priority === 'High' ? 'text-red-600' : 
+                      ticket.priority === 'Medium' ? 'text-orange-600' : 
+                      'text-gray-500'
+                    }`}>
+                      {ticket.priority}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-xs text-gray-500">{ticket.time}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <MoreVertical size={16} />
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {tickets.map((ticket, idx) => (
-                  <tr
-                    key={ticket._id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-mono text-gray-900 dark:text-white">
-                      T-{String(idx + 1).padStart(3, '0')}
-                    </td>
-                    <td className="px-6 py-4 text-gray-900 dark:text-white truncate max-w-xs">
-                      {ticket.title}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${getPriorityColor(
-                          ticket.priority
-                        )}`}
-                      >
-                        {ticket.priority?.charAt(0).toUpperCase() +
-                          ticket.priority?.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                          ticket.status
-                        )}`}
-                      >
-                        {ticket.status?.charAt(0).toUpperCase() + ticket.status?.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                      {formatDate(ticket.updatedAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-            No tickets yet
-          </div>
-        )}
-
-        {tickets && tickets.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-center">
-            <button
-              onClick={() => navigate('/tickets')}
-              className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium text-sm flex items-center gap-1 transition-colors"
-            >
-              View all
-              <ArrowRight size={16} />
-            </button>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

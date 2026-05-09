@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Zap, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import API from '../utils/axios';
-import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react';
 
 export default function Login() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -16,90 +15,157 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await API.post('/auth/login', form);
-      login(data.user, data.token);
+      await login(email, password);
       toast.success('Welcome back!');
-      navigate('/chat');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleDemoLogin = () => {
+    setEmail('admin@x1chat.com');
+    setPassword('password123');
   };
 
   return (
-    <div className="app-shell min-h-screen flex items-center justify-center px-4 py-8">
-      <Toaster position="top-center" toastOptions={{ style: { background: 'var(--surface-strong)', color: 'var(--text-main)', border: '1px solid var(--border-soft)' } }} />
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-5xl relative z-10"
-      >
-        <div className="grid lg:grid-cols-2 glass-card overflow-hidden">
-          <div className="p-8 lg:p-10 bg-[var(--surface-strong)]">
-            <div className="flex items-center gap-2 mb-8">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-amber-300 flex items-center justify-center">
-                <Zap size={18} className="text-amber-950" />
-              </div>
-              <span className="font-semibold text-[var(--text-main)] text-xl tracking-tight">X1Chat</span>
+    <div className="min-h-screen flex bg-white">
+      {/* Left Side: Form */}
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24">
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          <div className="flex items-center gap-2 mb-8">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xl">
+              X1
             </div>
+            <span className="text-2xl font-bold text-gray-900">X1Chat</span>
+          </div>
 
-            <h1 className="text-4xl font-semibold text-[var(--text-main)] mb-1">Welcome Back</h1>
-            <p className="text-[var(--text-soft)] mb-8 text-sm">Sign in to continue managing conversations and tickets.</p>
+          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Sign in to your account</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Or{' '}
+            <Link to="/register" className="font-medium text-primary hover:text-primary-600 transition-colors">
+              start your 14-day free trial
+            </Link>
+          </p>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="mt-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="text-xs text-[var(--text-soft)] mb-2 block uppercase tracking-wider">Email</label>
-                <div className="relative">
-                  <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-soft)]" />
+                <label className="block text-sm font-medium text-gray-700">Email address</label>
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
                   <input
                     type="email"
-                    value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })}
-                    placeholder="you@example.com"
-                    className="input-premium px-4 py-3 pl-11 placeholder-[var(--text-soft)] text-sm"
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input-field pl-10"
+                    placeholder="you@example.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-[var(--text-soft)] mb-2 block uppercase tracking-wider">Password</label>
-                <div className="relative">
-                  <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-soft)]" />
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
                   <input
                     type="password"
-                    value={form.password}
-                    onChange={e => setForm({ ...form, password: e.target.value })}
-                    placeholder="••••••••"
-                    className="input-premium px-4 py-3 pl-11 placeholder-[var(--text-soft)] text-sm"
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input-field pl-10"
+                    placeholder="••••••••"
                   />
                 </div>
               </div>
 
-              <button type="submit" disabled={loading} className="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-50">
-                {loading ? 'Signing in...' : (<>Continue <ArrowRight size={16} /></>)}
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-gray-900">
+                    Remember me
+                  </label>
+                </div>
+                <div className="font-medium text-primary hover:text-primary-600 cursor-pointer">
+                  Forgot your password?
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full btn-primary py-3 text-base shadow-sm"
+              >
+                {loading ? 'Signing in...' : 'Sign in'}
+                {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
               </button>
             </form>
 
-            <p className="text-[var(--text-soft)] text-sm text-center mt-6">
-              No account?{' '}
-              <Link to="/register" className="text-[var(--brand)] hover:opacity-85 transition">Create one free</Link>
-            </p>
-          </div>
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Demo Access</span>
+                </div>
+              </div>
 
-          <div className="hidden lg:flex items-center justify-center p-8 relative">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(255,167,107,0.35),transparent_55%)]" />
-            <div className="glass rounded-3xl p-6 border border-orange-200/50 max-w-md w-full relative z-10">
-              <p className="text-sm text-[var(--text-soft)] mb-3">Smart assistant preview</p>
-              <div className="bg-[var(--surface-strong)] border border-orange-200/60 rounded-2xl px-4 py-4 text-[var(--text-main)]">
-                Turn customer questions into resolved tickets
+              <div className="mt-4">
+                <button
+                  onClick={handleDemoLogin}
+                  className="w-full btn-secondary py-2"
+                >
+                  Fill Demo Credentials
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
+
+      {/* Right Side: Visual */}
+      <div className="hidden lg:block relative w-0 flex-1 bg-primary overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 flex flex-col justify-center px-12 text-white">
+          <div className="max-w-md">
+            <h3 className="text-4xl font-bold mb-6">One inbox. Infinite leverage.</h3>
+            <p className="text-xl text-primary-50">
+              X1Chat learns from every conversation, helping your team resolve issues 10x faster with AI-powered support.
+            </p>
+            
+            <div className="mt-12 space-y-6">
+              {[
+                'Centralize all customer channels',
+                'AI-driven responses and insights',
+                'Seamless team collaboration'
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                  </div>
+                  <span className="text-lg font-medium">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Subtle Decorative Element */}
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute -top-24 -left-24 w-64 h-64 bg-black/10 rounded-full blur-3xl" />
+      </div>
     </div>
   );
 }

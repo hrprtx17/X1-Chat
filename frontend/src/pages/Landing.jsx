@@ -1,250 +1,210 @@
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Ticket, BarChart3, Zap, Shield, Clock, ArrowRight, Bot, Users, Sparkles } from 'lucide-react';
 import LandingNav from '../components/LandingNav';
 import Footer from '../components/Footer';
-
-const features = [
-  { icon: Bot, title: 'AI-Powered Chatbot', desc: 'Groq LLaMA AI handles customer queries instantly with smart intent detection and contextual responses.' },
-  { icon: Ticket, title: 'Smart Ticket System', desc: 'Automatically escalate complex issues into support tickets with priority management and status tracking.' },
-  { icon: BarChart3, title: 'Analytics Dashboard', desc: 'Real-time insights into chat volume, intent breakdown, ticket status and customer satisfaction metrics.' },
-  { icon: Shield, title: 'Secure & Private', desc: 'JWT authentication, bcrypt password hashing, and protected API routes keep your data safe.' },
-  { icon: Clock, title: '24/7 Availability', desc: 'AI never sleeps. Provide instant support to customers at any hour without extra staffing costs.' },
-  { icon: Users, title: 'Multi-User Support', desc: 'Separate user and admin roles with dedicated dashboards and access controls.' },
-];
-
-const steps = [
-  { num: '01', title: 'Register your account', desc: 'Sign up in seconds. No credit card required.' },
-  { num: '02', title: 'Configure your FAQs', desc: 'Add your common questions so AI responds accurately.' },
-  { num: '03', title: 'Start supporting customers', desc: 'Share your link and let AI handle the queries.' },
-];
-
-const stats = [
-  { value: 90, suffix: '%', label: 'Queries auto-resolved' },
-  { value: 24, suffix: '/7', label: 'Always available' },
-  { value: 3, suffix: 'x', label: 'Faster response time' },
-  { value: 60, suffix: '%', label: 'Cost reduction' },
-];
-
-const testimonials = [
-  {
-    name: 'Support Lead',
-    company: 'Modern eCommerce',
-    quote: 'We reduced repetitive tickets instantly. The AI answers feel consistent, and escalations are clean.',
-  },
-  {
-    name: 'Ops Manager',
-    company: 'SaaS Startup',
-    quote: 'The workflow is fast: chat → escalation → visibility. It feels like a real product, not a demo.',
-  },
-  {
-    name: 'Founder',
-    company: 'D2C Brand',
-    quote: 'Clean UI, quick setup, and our customers get help immediately. Exactly what we wanted.',
-  },
-];
-
-
+import { motion } from 'framer-motion';
+import { 
+  ArrowRight, 
+  CheckCircle2, 
+  MessageSquare, 
+  Zap, 
+  Shield, 
+  BarChart3, 
+  Users,
+  Globe
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Landing() {
-  const navigate = useNavigate();
-  const chatbotPills = ['Order status and delivery', 'Refund and billing requests', 'Account login issues', 'Subscription upgrades'];
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
 
   return (
-    <div className="app-shell min-h-screen">
+    <div className="min-h-screen bg-white">
       <LandingNav />
 
-      <section className="relative px-6 pt-10 sm:pt-14 pb-16 sm:pb-20 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-[820px] h-[820px] bg-orange-300/20 dark:bg-orange-400/25 rounded-full blur-[140px]" />
-          <div className="absolute top-24 left-6 w-[320px] h-[320px] bg-amber-200/25 dark:bg-amber-300/35 rounded-full blur-[110px]" />
-          <div className="absolute top-10 right-6 w-[260px] h-[260px] bg-orange-200/20 dark:bg-orange-300/25 rounded-full blur-[110px]" />
-        </div>
-
-        <div className="max-w-6xl mx-auto relative z-10">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-xs sm:text-sm text-[var(--brand)] mb-6 border border-orange-200/50">
-                <Zap size={14} />
-                AI support, designed for modern teams
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold text-[var(--text-main)] mb-5 leading-tight tracking-tight">
-                <span className="block">
-                  <span className="gradient-text">X1Chat built for modern businesses.</span>
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
+            <div className="lg:col-span-6 text-center lg:text-left">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-700 mb-6">
+                  ✨ Now with AI-Powered Auto-Resolution
                 </span>
-              </h1>
-
-              <p className="text-base sm:text-lg md:text-xl text-[var(--text-soft)] mb-8 leading-relaxed">
-                Resolve common questions instantly, escalate intelligently, and see everything clearly—without bloated workflows.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-                <button
-                  onClick={() => navigate('/login')}
-                  className="btn-primary text-base py-3 px-8 flex items-center gap-2 justify-center tap"
-                >
-                  Get Started
-                  <ArrowRight size={18} />
-                </button>
-                <button
-                  onClick={() => document.getElementById('assistant')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                  className="glass text-[var(--text-main)] text-base py-3 px-8 rounded-xl hover:border-orange-300/60 transition-all flex items-center gap-2 justify-center tap"
-                >
-                  See the AI Assistant
-                </button>
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs sm:text-sm text-[var(--text-soft)]">
-                <span className="inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)]" /> Fast setup</span>
-                <span className="inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)]" /> Secure auth</span>
-                <span className="inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)]" /> Tickets + analytics</span>
-              </div>
-            </div>
-
-            <div className="mt-10 sm:mt-12">
-              <div className="glass-card p-4 sm:p-6 md:p-7">
-                <div className="flex items-center justify-between gap-3 mb-4">
+                <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-900 tracking-tight leading-tight mb-6">
+                  One inbox. <br />
+                  <span className="text-primary">Infinite leverage.</span>
+                </h1>
+                <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto lg:mx-0">
+                  X1Chat learns from every conversation, helping your team resolve issues 10x faster with AI-powered insights and automation.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                  <Link to="/register" className="btn-primary py-4 px-8 text-lg shadow-lg shadow-primary-500/20 w-full sm:w-auto">
+                    Start for Free
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                  <button className="btn-secondary py-4 px-8 text-lg w-full sm:w-auto">
+                    View Demo
+                  </button>
+                </div>
+                <div className="mt-8 flex items-center justify-center lg:justify-start gap-6 text-sm text-gray-500">
                   <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-xl bg-orange-200/40 border border-orange-300/35 flex items-center justify-center">
-                      <Sparkles size={16} className="text-[var(--brand)]" />
-                    </div>
-                    <div>
-                      <p className="text-[var(--text-main)] font-semibold text-sm">Ask X1Chat</p>
-                      <p className="text-[var(--text-soft)] text-xs">Try a prompt—see how the assistant responds</p>
-                    </div>
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    No credit card required
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full border border-orange-200/60 text-[var(--text-soft)] bg-white/50">Live preview</span>
-                </div>
-
-                <div className="glass rounded-2xl border border-orange-200/55 px-4 py-4 flex items-center gap-3">
-                  <input
-                    readOnly
-                    value="Customer says they can’t login. Ask questions, suggest fixes, then escalate if needed."
-                    className="flex-1 bg-transparent text-sm text-[var(--text-main)] focus:outline-none"
-                  />
-                  <button className="btn-primary text-sm px-4 py-2 tap">Send</button>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-                  {stats.map((s) => (
-                    <div key={s.label} className="glass rounded-xl p-4 border border-orange-200/40">
-                      <p className="text-2xl md:text-3xl font-semibold text-[var(--text-main)] mb-1">
-                        {s.value}{s.suffix}
-                      </p>
-                      <p className="text-xs text-[var(--text-soft)]">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-        </div>
-      </section>
-
-      <section id="testimonials" className="px-6 pb-20 sm:pb-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10 sm:mb-12">
-            <p className="text-xs uppercase tracking-[0.2em] text-[var(--brand)] mb-3">Testimonials</p>
-            <h2 className="text-3xl sm:text-4xl font-semibold text-[var(--text-main)]">Loved by modern support teams</h2>
-            <p className="text-[var(--text-soft)] mt-3 max-w-2xl mx-auto">A clean, fast support workspace with AI that feels helpful—not noisy.</p>
-          </div>
-
-          <div className="glass-card p-4 sm:p-5 overflow-hidden">
-            <motion.div
-              className="flex gap-4 will-change-transform"
-              initial={{ x: 0 }}
-              animate={{ x: ['0%', '-50%'] }}
-              transition={{ duration: 22, ease: 'linear', repeat: Infinity }}
-            >
-              {[...testimonials, ...testimonials].map((t, i) => (
-                <div
-                  key={`${t.name}-${i}`}
-                  className="glass-card p-6 surface-hover flex-shrink-0 w-[280px] sm:w-[340px] md:w-[380px]"
-                >
-                  <p className="text-[var(--text-main)] leading-relaxed">“{t.quote}”</p>
-                  <div className="mt-4 pt-4 border-t border-orange-200/40">
-                    <p className="text-sm font-semibold text-[var(--text-main)]">{t.name}</p>
-                    <p className="text-xs text-[var(--text-soft)]">{t.company}</p>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    14-day free trial
                   </div>
                 </div>
-              ))}
-            </motion.div>
+              </motion.div>
+            </div>
+
+            <div className="lg:col-span-6 mt-16 lg:mt-0 relative">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="relative z-10"
+              >
+                <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-400" />
+                      <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                      <div className="w-3 h-3 rounded-full bg-green-400" />
+                    </div>
+                    <div className="mx-auto bg-white px-3 py-1 rounded border border-gray-200 text-[10px] text-gray-400 font-medium">
+                      x1chat.app/dashboard
+                    </div>
+                  </div>
+                  <div className="p-4 bg-white aspect-[4/3] flex flex-col gap-4">
+                    <div className="h-8 w-1/3 bg-gray-100 rounded-md animate-pulse" />
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="h-24 bg-primary-50 rounded-lg border border-primary-100" />
+                      <div className="h-24 bg-gray-50 rounded-lg border border-gray-100" />
+                      <div className="h-24 bg-gray-50 rounded-lg border border-gray-100" />
+                    </div>
+                    <div className="flex-1 bg-gray-50 rounded-lg border border-gray-100 p-4">
+                      <div className="h-4 w-1/2 bg-gray-200 rounded mb-4" />
+                      <div className="space-y-3">
+                        <div className="h-3 w-full bg-gray-100 rounded" />
+                        <div className="h-3 w-full bg-gray-100 rounded" />
+                        <div className="h-3 w-3/4 bg-gray-100 rounded" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Floating Elements */}
+                <div className="absolute -top-6 -right-6 bg-white p-4 rounded-xl shadow-xl border border-gray-100 max-w-[200px] animate-bounce-slow">
+                   <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                        <Zap size={16} />
+                      </div>
+                      <p className="text-xs font-bold text-gray-900">AI Resolved</p>
+                   </div>
+                   <p className="text-[10px] text-gray-500">Resolved a ticket for customer "Sarah J."</p>
+                </div>
+              </motion.div>
+              {/* Background Glow */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary-200/30 blur-[120px] -z-10" />
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="assistant" className="px-6 pb-24">
-        <div className="max-w-6xl mx-auto glass-card p-7 md:p-10">
-          <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.2em] text-[var(--brand)] mb-3">AI assistant experience</p>
-            <h2 className="text-4xl md:text-5xl font-semibold text-[var(--text-main)] mb-4">A chatbot workspace your team will enjoy using.</h2>
-            <p className="text-[var(--text-soft)] mb-8">Inspired by modern app builders, crafted uniquely for support teams. Type naturally, get instant answers, and escalate in one click.</p>
-          </div>
-
-          <div className="glass rounded-3xl border border-orange-200/50 p-5 md:p-6">
-            <div className="rounded-2xl bg-white/70 dark:bg-black/20 border border-orange-100/60 px-4 py-4 flex items-center gap-3">
-              <Sparkles size={16} className="text-[var(--brand)]" />
-              <input
-                readOnly
-                value="A customer says they were charged twice. Help me resolve this."
-                className="flex-1 bg-transparent text-sm text-[var(--text-main)] focus:outline-none"
-              />
-              <button className="btn-primary text-sm px-4 py-2">Send</button>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-4">
-              {chatbotPills.map((pill) => (
-                <span key={pill} className="text-xs px-3 py-1.5 rounded-full border border-orange-200/70 text-[var(--text-soft)] bg-white/60">
-                  {pill}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="features" className="py-24 px-6 border-y border-orange-200/30">
-        <div className="max-w-6xl mx-auto">
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-semibold text-[var(--text-main)] mb-4">Built for modern support organizations</h2>
-            <p className="text-[var(--text-soft)] text-lg max-w-xl mx-auto">A cohesive toolkit for AI-first conversations, human escalation, and performance visibility.</p>
+            <h2 className="text-base font-semibold text-primary uppercase tracking-wide">Features</h2>
+            <p className="mt-2 text-4xl font-extrabold text-gray-900 tracking-tight">Everything you need to scale support.</p>
+            <p className="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
+              Built by support leaders, for support teams. Powerful enough for enterprise, simple enough for startups.
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f, i) => {
-              const Icon = f.icon;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  className="glass-card p-6 surface-hover group"
-                >
-                  <div className="w-11 h-11 bg-orange-200/35 border border-orange-300/30 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-200/50 transition-all">
-                    <Icon size={20} className="text-[var(--brand)]" />
-                  </div>
-                  <h3 className="text-[var(--text-main)] font-semibold mb-2">{f.title}</h3>
-                  <p className="text-[var(--text-soft)] text-sm leading-relaxed">{f.desc}</p>
-                </motion.div>
-              );
-            })}
+
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {[
+              { title: 'Unified Inbox', desc: 'All your customer messages from email, chat, and social in one place.', icon: MessageSquare },
+              { title: 'AI Assistant', desc: 'Smart auto-replies and ticket summarization to keep your team focused.', icon: Zap },
+              { title: 'Live Insights', desc: 'Real-time dashboards showing your volume, satisfaction, and AI impact.', icon: BarChart3 },
+              { title: 'Team Collaboration', desc: 'Private notes, mentions, and shared views for seamless teamwork.', icon: Users },
+              { title: 'Secure & Private', desc: 'Enterprise-grade security with SOC2 compliance and data encryption.', icon: Shield },
+              { title: 'Global Ready', desc: 'Multi-language support and time-zone management for global teams.', icon: Globe }
+            ].map((feature, i) => (
+              <motion.div key={i} variants={itemVariants} className="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-xl transition-all group">
+                <div className="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                  <feature.icon size={24} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-24 bg-primary">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-white">
+            <div>
+              <p className="text-5xl font-extrabold mb-2">10M+</p>
+              <p className="text-primary-100 opacity-80">Tickets Managed</p>
+            </div>
+            <div>
+              <p className="text-5xl font-extrabold mb-2">40%</p>
+              <p className="text-primary-100 opacity-80">AI Resolution Rate</p>
+            </div>
+            <div>
+              <p className="text-5xl font-extrabold mb-2">24/7</p>
+              <p className="text-primary-100 opacity-80">Active Support</p>
+            </div>
+            <div>
+              <p className="text-5xl font-extrabold mb-2">1,000+</p>
+              <p className="text-primary-100 opacity-80">Happy Companies</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="howitworks" className="px-6 pb-24">
-        <div className="max-w-5xl mx-auto glass-card p-8 md:p-10">
-          <h3 className="text-2xl font-semibold text-[var(--text-main)] mb-8">From setup to live support in three steps</h3>
-          <div className="grid md:grid-cols-3 gap-5">
-            {steps.map((step) => (
-              <div key={step.num} className="glass rounded-2xl p-5 border border-orange-200/45">
-                <p className="text-[var(--brand)] text-xs font-semibold mb-2">{step.num}</p>
-                <h4 className="text-[var(--text-main)] font-medium mb-2">{step.title}</h4>
-                <p className="text-sm text-[var(--text-soft)]">{step.desc}</p>
-              </div>
-            ))}
+      {/* CTA Section */}
+      <section className="py-24">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gray-900 rounded-3xl p-12 lg:p-20 text-center relative overflow-hidden">
+            <div className="relative z-10">
+              <h2 className="text-4xl font-extrabold text-white mb-6">Ready to transform your support?</h2>
+              <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
+                Join the future of customer support. Start your 14-day free trial today.
+              </p>
+              <Link to="/register" className="btn-primary py-4 px-10 text-lg">
+                Get Started Now
+              </Link>
+            </div>
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary via-transparent to-transparent" />
+            </div>
           </div>
         </div>
       </section>

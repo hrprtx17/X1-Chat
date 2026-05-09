@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X, Toggle2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, ToggleRight } from 'lucide-react';
 import API from '../utils/axios';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -138,7 +138,7 @@ export default function FAQ({ isDark }) {
                             : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
                         }`}
                       >
-                        <Toggle2 size={12} />
+                        <ToggleRight size={12} />
                         {faq.active !== false ? 'Active' : 'Inactive'}
                       </button>
                     </td>

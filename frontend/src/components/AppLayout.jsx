@@ -17,7 +17,7 @@ export default function AppLayout({ children, isDark, toggleTheme }) {
   };
 
   return (
-    <div className={`flex h-screen ${isDark ? 'dark' : ''}`}>
+    <div className={`flex h-screen w-full bg-white dark:bg-gray-950`}>
       {/* Sidebar */}
       <Sidebar
         isDark={isDark}
@@ -26,36 +26,34 @@ export default function AppLayout({ children, isDark, toggleTheme }) {
         setMobileOpen={setMobileOpen}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0 bg-[#F9FAFB] dark:bg-gray-950 h-screen overflow-hidden">
         {/* Mobile Top Bar */}
-        <div className="md:hidden bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between">
+        <div className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between z-10 flex-shrink-0">
           <button
             onClick={() => setMobileOpen(!isMobileOpen)}
             className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
           >
-            {isMobileOpen ? <Menu size={24} /> : <Menu size={24} />}
+            <Menu size={24} />
           </button>
 
           {/* Mobile Logo */}
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-orange-500 rounded-md flex items-center justify-center text-white font-bold text-sm">
-              X
+            <div className="w-6 h-6 bg-primary rounded flex items-center justify-center text-white font-bold text-xs">
+              X1
             </div>
-            <span className="font-bold text-gray-900 dark:text-white">X1Chat</span>
+            <span className="font-semibold text-gray-900 dark:text-white">X1Chat</span>
           </div>
 
           {/* Mobile User Avatar */}
-          <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 font-medium text-xs flex-shrink-0 border border-primary-200 dark:border-primary-800/50">
             {getInitials(user?.name)}
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
-          <div className="p-4 md:p-8">
-            {children}
-          </div>
+        {/* Scrollable Main Content Area */}
+        <main className="flex-1 overflow-auto">
+          {children}
         </main>
       </div>
     </div>

@@ -1,256 +1,152 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Send, Paperclip, Bot, RotateCcw, MessageCircle, Zap } from 'lucide-react';
-import API from '../utils/axios';
-import toast, { Toaster } from 'react-hot-toast';
+import { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { 
+  Send, 
+  Bot, 
+  User as UserIcon, 
+  Loader2, 
+  Trash2, 
+  MessageSquare,
+  Plus,
+  ArrowLeft
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
-const quickSuggestions = [
-  'I was charged twice this month',
-  'How do I reset my password?',
-  'Track my order',
-  'Report a bug'
-];
-
-export default function Chat({ isDark }) {
+export default function Chat() {
   const { user } = useAuth();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: "Hello! I'm your X1 AI assistant. How can I help you today?" }
+  ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [escalated, setEscalated] = useState(false);
-  const bottomRef = useRef(null);
-
-  const firstName = user?.name?.split(' ')[0] || 'there';
+  const scrollRef = useRef();
 
   useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([
-        {
-          role: 'ai',
-          text: `Hi ${firstName} — I'm X1, your AI support assistant. Ask me anything about your account, billing, or our API.`
-        }
-      ]);
-    }
-  }, []);
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim() || loading) return;
 
-  const getInitials = (name) => {
-    return name
-      ?.split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2) || 'U';
-  };
-
-  const sendMessage = async (text) => {
-    const msg = text || input.trim();
-    if (!msg || loading) return;
-
+    const userMsg = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMsg]);
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: msg }]);
     setLoading(true);
 
     try {
-      const { data } = await API.post('/chat', { message: msg });
-      setMessages(prev => [...prev, { role: 'ai', text: data.reply || data.message }]);
-
-      if (data.escalated) {
-        setEscalated(true);
-        setTimeout(() => setEscalated(false), 5000);
-      }
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [...prev, {
-        role: 'ai',
-        text: 'Sorry, something went wrong. Please try again later.'
-      }]);
+      const res = await axios.post('/api/chat', { 
+        messages: [...messages, userMsg].map(m => ({ role: m.role, content: m.content })) 
+      });
+      setMessages(prev => [...prev, { role: 'assistant', content: res.data.content }]);
+    } catch (err) {
+      toast.error('AI is currently unavailable');
+      setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I encountered an error. Please try again later." }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNewChat = () => {
-    setMessages([
-      {
-        role: 'ai',
-        text: `Hi ${firstName} — I'm X1, your AI support assistant. Ask me anything about your account, billing, or our API.`
-      }
-    ]);
-    setEscalated(false);
-  };
-
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] max-w-2xl mx-auto">
-      <Toaster position="top-center" />
-
+    <div className="h-full flex flex-col bg-[#F9FAFB] dark:bg-gray-950 fade-in">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white flex-shrink-0">
-            <Zap size={20} />
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 flex justify-between items-center shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+            <Bot size={24} />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">AI Assistant</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Powered by your knowledge base. Streamed token-by-token.
-            </p>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">AI Chatbot</h1>
+            <div className="flex items-center gap-1.5 text-xs text-green-500 font-medium">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              AI Assistant Online
+            </div>
           </div>
         </div>
-        <button
-          onClick={handleNewChat}
-          className="flex items-center gap-2 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors text-sm font-medium"
-        >
-          <RotateCcw size={16} />
-          New chat
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setMessages([{ role: 'assistant', content: "Hello! I'm your X1 AI assistant. How can I help you today?" }])}
+            className="btn-secondary px-3 py-2 text-sm"
+          >
+            <Trash2 size={16} className="mr-2" />
+            Clear
+          </button>
+          <button className="btn-primary px-3 py-2 text-sm">
+            <Plus size={16} className="mr-2" />
+            New Session
+          </button>
+        </div>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.map((msg, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            {msg.role === 'ai' && (
-              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white flex-shrink-0">
-                <Bot size={16} />
-              </div>
-            )}
-
-            <div
-              className={`max-w-xs lg:max-w-md px-4 py-2.5 rounded-lg ${
-                msg.role === 'user'
-                  ? 'bg-orange-500 text-white rounded-br-none'
-                  : isDark
-                  ? 'bg-gray-900 text-gray-200 rounded-tl-none'
-                  : 'bg-gray-100 text-gray-800 rounded-tl-none'
-              }`}
+      <div className="flex-1 overflow-y-auto px-4 md:px-0 py-8">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {messages.map((msg, i) => (
+            <div 
+              key={i} 
+              className={`flex items-start gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}
             >
-              <p className="text-sm leading-relaxed">{msg.text}</p>
-            </div>
-
-            {msg.role === 'user' && (
-              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
-                {getInitials(user?.name)}
+              <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center border ${
+                msg.role === 'assistant' 
+                  ? 'bg-white border-gray-200 text-primary dark:bg-gray-800 dark:border-gray-700' 
+                  : 'bg-primary border-primary text-white shadow-sm'
+              }`}>
+                {msg.role === 'assistant' ? <Bot size={18} /> : <UserIcon size={18} />}
               </div>
-            )}
-          </motion.div>
-        ))}
-
-        {/* Typing Indicator */}
-        {loading && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex gap-3"
-          >
-            <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white flex-shrink-0">
-              <Bot size={16} />
-            </div>
-            <div className={`px-4 py-2.5 rounded-lg ${
-              isDark
-                ? 'bg-gray-900 rounded-tl-none'
-                : 'bg-gray-100 rounded-tl-none'
-            }`}>
-              <div className="flex gap-1 items-center h-4">
-                {[0, 1, 2].map(i => (
-                  <span
-                    key={i}
-                    className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce"
-                    style={{ animationDelay: `${i * 150}ms` }}
-                  />
-                ))}
+              <div className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'items-end' : ''}`}>
+                <div className={`px-5 py-3 rounded-2xl text-sm leading-relaxed ${
+                  msg.role === 'assistant' 
+                    ? 'bg-white text-gray-800 border border-gray-200 shadow-sm dark:bg-gray-900 dark:text-gray-200 dark:border-gray-800 rounded-tl-none' 
+                    : 'bg-primary text-white shadow-sm rounded-tr-none'
+                }`}>
+                  {msg.content}
+                </div>
+                <span className="mt-1.5 text-[10px] text-gray-400 font-medium px-1 uppercase tracking-wider">
+                  {msg.role === 'assistant' ? 'AI Assistant' : user?.name || 'You'} • Just now
+                </span>
               </div>
             </div>
-          </motion.div>
-        )}
-
-        {/* Escalation Notice */}
-        {escalated && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mx-auto max-w-xs bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg p-3 text-center"
-          >
-            <p className="text-sm text-orange-800 dark:text-orange-300 font-medium">
-              🎫 A support ticket has been created for your issue.
-            </p>
-          </motion.div>
-        )}
-
-        {/* Quick Suggestions - Show only on first message */}
-        {messages.length === 1 && !loading && (
-          <div className="grid grid-cols-2 gap-2 mt-6">
-            {quickSuggestions.map((suggestion, idx) => (
-              <button
-                key={idx}
-                onClick={() => sendMessage(suggestion)}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors border ${
-                  isDark
-                    ? 'border-gray-700 text-gray-300 hover:bg-gray-900/50'
-                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div ref={bottomRef} />
+          ))}
+          {loading && (
+            <div className="flex items-start gap-4 animate-pulse">
+              <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-300 dark:bg-gray-800 dark:border-gray-700">
+                <Bot size={18} />
+              </div>
+              <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm dark:bg-gray-900 dark:border-gray-800">
+                <div className="flex gap-1.5 py-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:0.2s]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:0.4s]" />
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={scrollRef} />
+        </div>
       </div>
 
       {/* Input Area */}
-      <div className={`border-t ${
-        isDark
-          ? 'border-gray-700 bg-gray-800'
-          : 'border-gray-200 bg-white'
-      } p-4`}>
-        <div className={`flex items-end gap-3 px-4 py-3 rounded-lg border ${
-          isDark
-            ? 'border-gray-700 bg-gray-900'
-            : 'border-gray-200 bg-gray-50'
-        }`}>
-          <button
-            type="button"
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0"
-            title="Attach file"
-          >
-            <Paperclip size={18} />
-          </button>
-
+      <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-6 shrink-0">
+        <form onSubmit={handleSend} className="max-w-3xl mx-auto relative">
           <input
             type="text"
+            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl pl-5 pr-14 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-inner text-gray-800 dark:text-gray-200"
+            placeholder="Type your message here..."
             value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyPress={e => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-              }
-            }}
-            placeholder="Ask anything..."
-            className={`flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none text-sm`}
-            disabled={loading}
+            onChange={(e) => setInput(e.target.value)}
           />
-
           <button
-            onClick={() => sendMessage()}
+            type="submit"
             disabled={loading || !input.trim()}
-            className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors flex-shrink-0"
+            className="absolute right-2 top-2 p-3 bg-primary text-white rounded-xl hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             <Send size={18} />
           </button>
-        </div>
+        </form>
+        <p className="text-center text-[10px] text-gray-400 mt-3 font-medium uppercase tracking-widest">
+          X1 AI can make mistakes. Check important info.
+        </p>
       </div>
     </div>
   );
