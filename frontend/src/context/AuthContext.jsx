@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { getUser, getToken, logout as authLogout } from '../utils/auth';
+import API from '../utils/axios';
 
 const AuthContext = createContext();
 
@@ -10,13 +11,21 @@ export const AuthProvider = ({ children }) => {
 
   // Initialize from localStorage safely on mount
   useEffect(() => {
-    const storedUser = getUser();
-    const storedToken = getToken();
-    if (storedUser && storedToken) {
-      setUser(storedUser);
-      setToken(storedToken);
-    }
-    setLoading(false);
+    const initializeAuth = () => {
+      try {
+        const storedUser = getUser();
+        const storedToken = getToken();
+        if (storedUser && storedToken) {
+          setUser(storedUser);
+          setToken(storedToken);
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initializeAuth();
   }, []);
 
   const login = (userData, userToken) => {
@@ -35,8 +44,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const register = async (name, email, password) => {
     try {
+      const { data } = await API.post('/auth/register', { name, email, password });
+      if (data?.user && data?.token) {
+        // Auto-login after registration
+        login(data.user, data.token);
+        return data;
+      }
+      throw new Error('Invalid response from registration endpoint');
+    } catch (err) {
+      console.error('Registration API error:', err);
+      throw err;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      // Notify backend to clear cookies
+      await API.post('/auth/logout').catch(e => console.warn('Logout notification failed', e));
+      
       authLogout();
       setUser(null);
       setToken(null);
@@ -46,12 +73,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Provide a safe default user object if null for rendering, 
-  // but keep user as null for logic checks like ProtectedRoute
   const value = {
     user,
     token,
     login,
+    register,
     logout,
     isLoggedIn: !!token,
     loading
