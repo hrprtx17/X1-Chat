@@ -54,8 +54,10 @@ export default function AppLayout({ children, isDark, toggleTheme }) {
         </div>
 
         {/* Scrollable Main Content Area */}
-        <main className="flex-1 overflow-auto">
-          {children}
+        <main className="flex-1 overflow-auto bg-[var(--bg-alt)]">
+          <div className="page-container">
+            {children}
+          </div>
         </main>
       </div>
     </div>

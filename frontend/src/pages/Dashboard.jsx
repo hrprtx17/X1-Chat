@@ -4,11 +4,7 @@ import {
   Users, 
   MessageSquare, 
   Ticket, 
-  TrendingUp, 
-  ArrowUpRight, 
-  ArrowDownRight,
-  MoreVertical,
-  Plus,
+  TrendingUp,
   Ticket as TicketIcon
 } from 'lucide-react';
 import { 
@@ -39,8 +35,8 @@ export default function Dashboard() {
         const statsRes = await API.get('/chat/stats');
         setStats(statsRes?.data || null);
 
-        // Fetch recent tickets (admin only or user's own)
-        const ticketsRes = await API.get(user?.role === 'admin' ? '/tickets/all' : '/tickets');
+        // Fetch recent tickets
+        const ticketsRes = await API.get('/tickets/all');
         setRecentTickets((ticketsRes?.data ?? []).slice(0, 5));
       } catch (err) {
         console.error('Dashboard data fetch error:', err);
@@ -50,7 +46,7 @@ export default function Dashboard() {
       }
     };
     fetchDashboardData();
-  }, [user?.role]);
+  }, []);
 
   const chartData = (stats?.last7Days ?? []).map(d => ({ 
     name: d?._id ?? 'Unknown', 
@@ -63,22 +59,20 @@ export default function Dashboard() {
   }));
 
   const StatCard = ({ title, value, icon: Icon, color, loading }) => (
-    <div className="card p-6">
+    <div className="card p-6 flex flex-col gap-1 transition-all hover:shadow-md border-gray-100 dark:border-gray-800">
       {loading ? (
         <div className="animate-pulse space-y-3">
-          <div className="h-10 w-10 bg-gray-200 dark:bg-gray-800 rounded-lg"></div>
-          <div className="h-4 w-20 bg-gray-100 dark:bg-gray-900 rounded"></div>
-          <div className="h-8 w-16 bg-gray-200 dark:bg-gray-800 rounded"></div>
+          <div className="h-10 w-10 bg-gray-100 dark:bg-gray-800 rounded-lg"></div>
+          <div className="h-4 w-20 bg-gray-50 dark:bg-gray-900 rounded"></div>
+          <div className="h-8 w-16 bg-gray-100 dark:bg-gray-800 rounded"></div>
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-start mb-4">
-            <div className={`p-2 rounded-lg bg-${color}-50 text-${color}-600 dark:bg-${color}-900/20 dark:text-${color}-400`}>
-              <Icon size={20} />
-            </div>
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 bg-${color}-50 text-${color}-600 dark:bg-${color}-900/20 dark:text-${color}-400`}>
+            <Icon size={20} />
           </div>
-          <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+          <h3 className="text-gray-500 text-sm font-semibold uppercase tracking-wider">{title}</h3>
+          <p className="text-3xl font-extrabold text-gray-900 dark:text-white">{value}</p>
         </>
       )}
     </div>
@@ -95,70 +89,41 @@ export default function Dashboard() {
       .slice(0, 2);
   };
 
-  const LoadingSpinner = () => (
-    <div className="flex items-center justify-center h-64">
-      <div className="flex gap-2">
-        {[0, 1, 2].map(i => (
-          <div key={i} 
-            className="w-2 h-2 bg-primary rounded-full animate-bounce" 
-            style={{ animationDelay: `${i * 150}ms` }} 
-          />
-        ))}
+  if (loading && !stats) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex gap-2">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
+          ))}
+        </div>
       </div>
-    </div>
-  );
-
-  if (loading && !stats) return <LoadingSpinner />;
+    );
+  }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 fade-in">
+    <div className="section-spacing fade-in">
       {/* Header */}
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Welcome back, {user?.name?.split(' ')?.filter(Boolean)?.[0] ?? 'User'} 👋
-          </h1>
-          <p className="text-gray-500 mt-1">Here's what's happening with your support channels today.</p>
+          <h1 className="text-3xl font-extrabold">Dashboard</h1>
+          <p className="text-gray-500 mt-1 font-medium">Monitoring your customer support performance.</p>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Open Tickets" 
-          value={stats?.openTickets ?? 0} 
-          icon={Ticket} 
-          color="orange" 
-          loading={loading}
-        />
-        <StatCard 
-          title="Total AI Chats" 
-          value={stats?.totalChats ?? 0} 
-          icon={TrendingUp} 
-          color="green" 
-          loading={loading}
-        />
-        <StatCard 
-          title="Escalated" 
-          value={stats?.escalatedChats ?? 0} 
-          icon={MessageSquare} 
-          color="blue" 
-          loading={loading}
-        />
-        <StatCard 
-          title="Total Users" 
-          value={stats?.totalUsers ?? 0} 
-          icon={Users} 
-          color="purple" 
-          loading={loading}
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Open Tickets" value={stats?.openTickets ?? 0} icon={Ticket} color="orange" loading={loading} />
+        <StatCard title="Total AI Chats" value={stats?.totalChats ?? 0} icon={TrendingUp} color="green" loading={loading} />
+        <StatCard title="Escalated" value={stats?.escalatedChats ?? 0} icon={MessageSquare} color="blue" loading={loading} />
+        <StatCard title="Total Users" value={stats?.totalUsers ?? 0} icon={Users} color="purple" loading={loading} />
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="card p-6 lg:col-span-2">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-8">Chat Volume — Last 7 Days</h3>
-          <div className="h-[300px] w-full">
+        <div className="card p-6 lg:col-span-2 flex flex-col gap-6">
+          <h3 className="text-lg font-bold">Chat Volume — Last 7 Days</h3>
+          <div className="h-[320px] w-full">
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
@@ -168,163 +133,107 @@ export default function Dashboard() {
                       <stop offset="95%" stopColor="#F97316" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 12, fill: '#9ca3af' }} 
-                    dy={10}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 12, fill: '#9ca3af' }} 
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#fff', 
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="chats" 
-                    stroke="#F97316" 
-                    strokeWidth={2}
-                    fillOpacity={1} 
-                    fill="url(#colorChats)" 
-                  />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" opacity={0.5} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280', fontWeight: 500 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280', fontWeight: 500 }} />
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                  <Area type="monotone" dataKey="chats" stroke="#F97316" strokeWidth={3} fillOpacity={1} fill="url(#colorChats)" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+              <div className="h-full flex items-center justify-center text-gray-400 font-medium italic bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
                 No chat data available for the last 7 days.
               </div>
             )}
           </div>
         </div>
 
-        <div className="card p-6">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Intent Distribution</h3>
-          <div className="h-[200px] w-full mb-6">
+        <div className="card p-6 flex flex-col gap-6">
+          <h3 className="text-lg font-bold">Intent Distribution</h3>
+          <div className="h-[220px] w-full">
             {intentData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={intentData} layout="vertical">
+                <BarChart data={intentData} layout="vertical" margin={{ left: -20 }}>
                   <XAxis type="number" hide />
-                  <YAxis 
-                    dataKey="name" 
-                    type="category" 
-                    axisLine={false} 
-                    tickLine={false}
-                    tick={{ fontSize: 10, fill: '#9ca3af' }}
-                    width={80}
-                  />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#F97316" radius={[0, 4, 4, 0]} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280', fontWeight: 600 }} width={100} />
+                  <Tooltip cursor={{ fill: 'transparent' }} />
+                  <Bar dataKey="count" fill="#F97316" radius={[0, 6, 6, 0]} barSize={24} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+              <div className="h-full flex items-center justify-center text-gray-400 font-medium italic bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
                 No intent data available.
               </div>
             )}
           </div>
-          <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">AI Support Insights</h4>
-            <div className="p-4 bg-orange-50 dark:bg-orange-900/10 rounded-lg border border-orange-100 dark:border-orange-800/30">
-              <p className="text-xs text-orange-800 dark:text-orange-300 font-medium leading-relaxed">
-                {(stats?.escalatedChats ?? 0) > 0 ? (
-                  `⚠️ ${stats.escalatedChats} chats were escalated. Consider reviewing the most frequent issues.`
-                ) : (stats?.openTickets ?? 0) > 0 ? (
-                  `🎫 ${stats.openTickets} tickets are currently open and awaiting response.`
-                ) : (stats?.totalChats ?? 0) === 0 ? (
-                  "💬 No chats yet. Integrate the widget to start assisting customers."
-                ) : (
-                  "✅ Everything looks good! AI is successfully handling customer queries."
-                )}
-              </p>
-            </div>
+          <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-100 dark:border-orange-900/30">
+            <h4 className="text-sm font-bold text-orange-900 dark:text-orange-200 mb-1">AI Performance</h4>
+            <p className="text-xs text-orange-800 dark:text-orange-300 font-medium leading-relaxed">
+              {(stats?.escalatedChats ?? 0) > 0 ? (
+                `Attention: ${stats.escalatedChats} chats required human intervention. Review escalations to improve AI training.`
+              ) : (
+                "AI is handling all queries successfully. No escalations required in the current period."
+              )}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Recent Activity */}
-      <div className="card overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Tickets</h3>
+      <div className="card">
+        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="text-lg font-bold">Recent Support Tickets</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <th className="px-6 py-3">ID</th>
-                <th className="px-6 py-3">Subject</th>
-                <th className="px-6 py-3">Customer</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3">Priority</th>
-                <th className="px-6 py-3">Created</th>
-                <th className="px-6 py-3"></th>
+              <tr className="bg-gray-50 dark:bg-gray-800/30 text-[11px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
+                <th className="px-6 py-4">Ticket</th>
+                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Priority</th>
+                <th className="px-6 py-4">Created</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {(recentTickets ?? []).length === 0 ? (
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+              {recentTickets.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
-                    <div className="flex flex-col items-center gap-2 opacity-30">
-                      <TicketIcon size={40} />
-                      <p className="text-sm">No recent tickets found.</p>
-                    </div>
+                  <td colSpan="5" className="px-6 py-16 text-center text-gray-400 italic">
+                    <TicketIcon size={32} className="mx-auto mb-3 opacity-20" />
+                    No recent tickets.
                   </td>
                 </tr>
               ) : (
                 recentTickets.map((ticket) => (
-                  <tr key={ticket?._id ?? Math.random()} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-xs text-gray-400">
-                      #{ticket?._id?.slice(-6)?.toUpperCase() ?? 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                      {ticket?.title ?? 'No Subject'}
+                  <tr key={ticket?._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm text-gray-900 dark:text-white">{ticket?.title}</span>
+                        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-tighter mt-0.5">#{ticket?._id?.slice(-8)}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold border border-gray-200 dark:border-gray-700">
                           {getInitials(ticket?.userId?.name)}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            {ticket?.userId?.name ?? 'Unknown'}
-                          </p>
-                        </div>
+                        <span className="text-sm font-semibold">{ticket?.userId?.name ?? 'Unknown'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`badge ${
-                        ticket?.status === 'open' ? 'bg-green-100 text-green-700' : 
-                        ticket?.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
-                        'bg-gray-100 text-gray-700'
+                        ticket?.status === 'open' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' : 
+                        ticket?.status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400' : 
+                        'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
                       }`}>
-                        {ticket?.status ?? 'unknown'}
+                        {ticket?.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`text-xs font-medium ${
-                        ticket?.priority === 'high' || ticket?.priority === 'critical' ? 'text-red-600' : 
-                        ticket?.priority === 'medium' ? 'text-orange-600' : 
-                        'text-gray-500'
-                      }`}>
-                        {ticket?.priority ?? 'low'}
-                      </span>
+                    <td className="px-6 py-4 text-xs font-bold uppercase tracking-wide text-gray-500">
+                      {ticket?.priority}
                     </td>
-                    <td className="px-6 py-4 text-xs text-gray-500">
-                      {ticket?.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'recently'}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <MoreVertical size={16} />
-                      </button>
+                    <td className="px-6 py-4 text-xs font-medium text-gray-400">
+                      {ticket?.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'N/A'}
                     </td>
                   </tr>
                 ))
