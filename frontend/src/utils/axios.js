@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Direct API configuration - Frontend calls Render backend directly
+// The baseURL is determined by .env.development or .env.production
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://x1-chat-app.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL,
   timeout: 30000,
   withCredentials: true,
 });
@@ -14,11 +14,12 @@ API.interceptors.request.use((req) => {
       req.headers.Authorization = `Bearer ${token}`;
     }
     
+    // Debug logging for developers
     if (import.meta.env.DEV) {
-      console.log(`🚀 ${req.method?.toUpperCase()} ${req.url}`);
+      console.log(`📡 [API Request] ${req.method?.toUpperCase()} ${req.baseURL}${req.url}`);
     }
   } catch (e) {
-    console.error('Auth token interceptor error:', e);
+    console.error('Auth interceptor error:', e);
   }
   return req;
 }, (error) => Promise.reject(error));
@@ -26,7 +27,7 @@ API.interceptors.request.use((req) => {
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle session expiry
+    // Session expiry handling
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -36,11 +37,11 @@ API.interceptors.response.use(
       }
     }
     
-    // Log failures in production for easier debugging via browser console
-    console.error('❌ API Error:', {
-      url: error.config?.url,
+    // Robust error logging
+    console.error('🔴 API Failure:', {
+      endpoint: error.config?.url,
       status: error.response?.status,
-      data: error.response?.data
+      message: error.response?.data?.message || error.message
     });
     
     return Promise.reject(error);
