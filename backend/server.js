@@ -6,18 +6,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
-// Global error handlers to prevent silent crashes
-process.on('uncaughtException', (err) => {
-  console.error('❌ UNCAUGHT EXCEPTION:', err);
-  console.error('Stack:', err.stack);
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ UNHANDLED REJECTION at:', promise, 'reason:', reason);
-});
-
-// Load routes
 const authRoutes = require('./routes/auth');
 const ticketRoutes = require('./routes/tickets');
 const faqRoutes = require('./routes/faqs');
@@ -25,38 +13,27 @@ const chatRoutes = require('./routes/chatbot');
 
 const app = express();
 
-// Trust proxy is REQUIRED for secure cookies behind Vercel/Render proxies
+// Trust proxy for secure cookies
 app.set('trust proxy', 1);
 
-// CORS Configuration
+// STRICT CORS CONFIGURATION - No Wildcards
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://x1-chat-app.vercel.app', // Add your actual Vercel domain here
-  /\.vercel\.app$/,
-  /--.*\.vercel\.app$/
+  'https://x1-chat.vercel.app',
+  'https://x1-chat-app.vercel.app'
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
+    // Allow requests with no origin (like mobile apps)
     if (!origin) return callback(null, true);
 
-    const isAllowed = allowedOrigins.some(pattern => {
-      if (pattern instanceof RegExp) return pattern.test(origin);
-      return pattern === origin;
-    });
-
-    if (isAllowed) {
+    if (allowedOrigins.indexOf(origin) !== -1 || (process.env.NODE_ENV !== 'production')) {
       callback(null, true);
     } else {
-      // In development, allow everything to prevent blockers
-      if (process.env.NODE_ENV !== 'production') {
-        callback(null, true);
-      } else {
-        console.warn(`⚠️ CORS blocked for origin: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
-      }
+      console.warn(`CORS blocked for origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
@@ -68,91 +45,28 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-// Request logging for debugging production
-app.use((req, res, next) => {
-  if (process.env.NODE_ENV !== 'test') {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    if (req.method !== 'GET') {
-      // Be careful not to log sensitive data in real production, but helpful for debugging now
-      console.log('Body keys:', Object.keys(req.body));
-    }
-  }
-  next();
-});
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/chat', chatRoutes);
 
-// Health check endpoint
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'X1Chat API Running!',
-    version: '1.1.0',
-    status: 'healthy',
-    environment: process.env.NODE_ENV || 'development'
-  });
+  res.json({ message: 'X1Chat API Active', status: 'healthy' });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-// Express error middleware (must be last)
-app.use((err, req, res, next) => {
-  if (err.name === 'Error' && err.message === 'Not allowed by CORS') {
-    return res.status(403).json({ message: 'CORS policy block' });
-  }
-  
-  console.error('🔴 Express Error:', err.message);
-  res.status(err.status || 500).json({ 
-    message: 'Server error',
-    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
-  });
-});
-
-// Configuration validation and startup
+// Port and DB
 const port = process.env.PORT || 5000;
 const mongoUri = process.env.MONGO_URI;
 
-// Validate required environment variables
-const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
-const missingEnvVars = requiredEnvVars.filter(v => !process.env[v]);
-
-if (missingEnvVars.length > 0) {
-  console.error(`❌ STARTUP FAILED: Missing environment variables: ${missingEnvVars.join(', ')}`);
-  process.exit(1);
-}
-
-// Connect to MongoDB and start server
-console.log('🔌 Connecting to MongoDB...');
 mongoose.connect(mongoUri)
   .then(() => {
-    console.log('✅ MongoDB Connected Successfully');
-    
-    const server = app.listen(port, '0.0.0.0', () => {
-      console.log(`✨ X1Chat Server is running on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
+    console.log('✅ MongoDB Connected');
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`✨ Server running on port ${port}`);
     });
-
-    // Handle server shutdown gracefully
-    const shutdown = () => {
-      console.log('\n⚠️  Shutting down server...');
-      server.close(() => {
-        console.log('HTTP server closed');
-        mongoose.connection.close(false).then(() => {
-          console.log('MongoDB connection closed');
-          process.exit(0);
-        });
-      });
-    };
-
-    process.on('SIGTERM', shutdown);
-    process.on('SIGINT', shutdown);
   })
-  .catch((err) => {
+  .catch(err => {
     console.error('❌ MongoDB Connection Error:', err.message);
     process.exit(1);
   });
