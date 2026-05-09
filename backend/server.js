@@ -25,6 +25,9 @@ const chatRoutes = require('./routes/chatbot');
 
 const app = express();
 
+// Trust proxy is REQUIRED for secure cookies behind Vercel/Render proxies
+app.set('trust proxy', 1);
+
 // CORS Configuration
 const allowedOrigins = [
   'http://localhost:5173',

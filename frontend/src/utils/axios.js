@@ -1,12 +1,8 @@
 import axios from 'axios';
 
-// In production, we prefer relative paths to leverage the Vercel proxy
-// This avoids CORS issues and simplifies deployment config
-const isProd = import.meta.env.PROD;
-const defaultBaseURL = isProd ? '/api' : 'http://localhost:5000/api';
-
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || defaultBaseURL,
+  // prioritize VITE_API_URL, then /api for Vercel proxy, then localhost for dev
+  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api'),
   timeout: 30000,
   withCredentials: true,
 });
