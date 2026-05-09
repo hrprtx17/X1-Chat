@@ -28,34 +28,53 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = (userData, userToken) => {
+  const login = async (email, password) => {
     try {
-      if (!userData || !userToken) return;
+      const { data } = await API.post('/auth/login', { email: email.trim(), password });
       
-      localStorage.setItem('token', userToken);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      setUser(userData);
-      setToken(userToken);
-      
-      console.log('Login successful: State and localStorage updated');
-    } catch (e) {
-      console.error('Error saving auth data during login:', e);
+      if (data?.token && data?.user) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        setUser(data.user);
+        setToken(data.token);
+        
+        console.log('✅ Login successful');
+        return data;
+      } else {
+        console.error('Invalid login response structure:', data);
+        throw new Error('Server returned an invalid authentication response');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      // Ensure we throw an object with a message property for toast
+      const message = error.response?.data?.message || error.message || 'Login failed';
+      throw { ...error, message };
     }
   };
 
   const register = async (name, email, password) => {
     try {
-      const { data } = await API.post('/auth/register', { name, email, password });
-      if (data?.user && data?.token) {
-        // Auto-login after registration
-        login(data.user, data.token);
+      const { data } = await API.post('/auth/register', { 
+        name: name.trim(), 
+        email: email.trim().toLowerCase(), 
+        password 
+      });
+      
+      if (data?.token && data?.user) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        setUser(data.user);
+        setToken(data.token);
         return data;
+      } else {
+        throw new Error('Server returned an invalid registration response');
       }
-      throw new Error('Invalid response from registration endpoint');
-    } catch (err) {
-      console.error('Registration API error:', err);
-      throw err;
+    } catch (error) {
+      console.error('Registration error:', error);
+      const message = error.response?.data?.message || error.message || 'Registration failed';
+      throw { ...error, message };
     }
   };
 

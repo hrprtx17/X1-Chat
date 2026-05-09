@@ -27,13 +27,13 @@ function AnimatedRoutes({ isDark, toggleTheme }) {
     <AnimatePresence mode="wait">
       <motion.div
         key={location.pathname}
-        initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        exit={{ opacity: 0, y: -6, filter: 'blur(8px)' }}
-        transition={{ duration: 0.22, ease: 'easeOut' }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
       >
         <Routes location={location}>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<Landing isDark={isDark} toggleTheme={toggleTheme} />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
@@ -127,6 +127,8 @@ export default function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    document.title = 'X1 Chat | Modern AI Support Platform';
   }, [isDark]);
 
   const toggleTheme = () => {

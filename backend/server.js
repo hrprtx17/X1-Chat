@@ -12,45 +12,44 @@ const chatRoutes = require('./routes/chatbot');
 
 const app = express();
 
+const cors = require('cors');
+
 // Trust proxy for secure cookies
 app.set('trust proxy', 1);
 
-// MANUAL CORS MIDDLEWARE - Ultimate control to prevent wildcard '*' issues
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://x1-chat.vercel.app',
-    'https://x1-chat-app.vercel.app'
-  ];
-  
-  const origin = req.headers.origin;
-  
-  // If the request origin is in our whitelist, mirror it exactly in the response
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (!origin && process.env.NODE_ENV !== 'production') {
-    // For local development tools like postman/curl if needed
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
+// Configure robust CORS
+const allowedOrigins = [
+  'http://localhost:5177',
+  'http://localhost:5173',
+  'http://127.0.0.1:5177',
+  'http://127.0.0.1:5173',
+  'https://x1-chat.vercel.app',
+  'https://x1-chat-app.vercel.app',
+  'https://x1-chat-app.onrender.com'
+];
 
-  // REQUIRED for withCredentials: true
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  
-  // Allowed methods and headers
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Cookie');
-  
-  // Expose headers for the frontend (like Set-Cookie)
-  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-
-  // Handle preflight OPTIONS request
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  next();
-});
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = allowedOrigins.includes(origin) || 
+                     /^http:\/\/localhost:\d+$/.test(origin) ||
+                     /\.vercel\.app$/.test(origin);
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked for origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Cookie'],
+  exposedHeaders: ['Set-Cookie'],
+  optionsSuccessStatus: 200
+}));
 
 app.use(cookieParser());
 app.use(express.json());

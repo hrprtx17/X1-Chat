@@ -39,22 +39,37 @@ API.interceptors.request.use((req) => {
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Session expiry handling
+    const originalRequest = error.config;
+    
+    // Handle Network Errors (no response from server)
+    if (!error.response) {
+      console.error('🌐 Network Error: Please check if the backend server is running and accessible.', {
+        url: originalRequest?.url,
+        method: originalRequest?.method
+      });
+      return Promise.reject({
+        message: 'Network error: Backend server is unreachable.',
+        isNetworkError: true
+      });
+    }
+
+    // Handle Session Expiry
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       
-      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-        window.location.href = '/login';
+      // Only redirect if not already on an auth page
+      if (!['/login', '/register'].includes(window.location.pathname)) {
+        window.location.href = '/login?expired=true';
       }
     }
     
-    // Robust error logging for production debugging
+    // Robust error logging for debugging
     console.error('🔴 API Failure:', {
       endpoint: error.config?.url,
-      fullURL: `${error.config?.baseURL}${error.config?.url}`,
       status: error.response?.status,
-      message: error.response?.data?.message || error.message
+      message: error.response?.data?.message || error.message,
+      data: error.response?.data
     });
     
     return Promise.reject(error);

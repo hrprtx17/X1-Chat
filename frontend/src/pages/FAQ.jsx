@@ -1,18 +1,31 @@
 import { useState, useEffect } from 'react';
 import API from '../utils/axios';
 import { 
-  Plus, 
-  Search, 
-  ChevronDown, 
-  ChevronUp, 
-  Edit2, 
-  Trash2,
-  HelpCircle,
-  X,
-  MessageSquare
+  Plus, Search, ChevronDown, ChevronUp, Edit2, Trash2,
+  HelpCircle, X, MessageSquare, Sparkles, Zap, 
+  ArrowRight, Filter, AlertCircle, Info
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { type: 'spring', stiffness: 300, damping: 30 } 
+  }
+};
 
 export default function FAQ() {
   const { user } = useAuth();
@@ -38,34 +51,32 @@ export default function FAQ() {
     }
   };
 
-  useEffect(() => {
-    fetchFaqs();
-  }, []);
+  useEffect(() => { fetchFaqs(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingFaq) {
         await API.put(`/faqs/${editingFaq._id}`, form);
-        toast.success('FAQ updated');
+        toast.success('FAQ updated successfully');
       } else {
         await API.post('/faqs', form);
-        toast.success('FAQ created');
+        toast.success('FAQ created successfully');
       }
       setShowModal(false);
       setEditingFaq(null);
       setForm({ question: '', answer: '', category: 'General' });
       fetchFaqs();
     } catch (err) {
-      toast.error('Action failed');
+      toast.error('Operation failed. Please try again.');
     }
   };
 
   const deleteFaq = async (id) => {
-    if (!window.confirm('Delete this FAQ?')) return;
+    if (!window.confirm('Are you sure you want to delete this FAQ?')) return;
     try {
       await API.delete(`/faqs/${id}`);
-      toast.success('FAQ deleted');
+      toast.success('FAQ removed');
       fetchFaqs();
     } catch (err) {
       toast.error('Delete failed');
@@ -74,189 +85,266 @@ export default function FAQ() {
 
   const filteredFaqs = faqs.filter(faq => 
     faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+    faq.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    faq.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="section-spacing fade-in">
+    <div className="section-spacing pb-20 overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold">Help & FAQs</h1>
-          <p className="text-gray-500 mt-1 font-medium">Quick answers to common questions about X1Chat.</p>
-        </div>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-2">
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <HelpCircle size={20} className="text-primary" />
+            </div>
+            <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Help Center</h1>
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 font-medium ml-13">
+            Instant answers to common queries about X1 Chat.
+          </p>
+        </motion.div>
+
         {isAdmin && (
-          <button 
-            onClick={() => {
-              setEditingFaq(null);
-              setForm({ question: '', answer: '', category: 'General' });
-              setShowModal(true);
-            }} 
-            className="btn-primary w-full sm:w-auto"
-          >
-            <Plus size={18} className="mr-2" />
-            Add Question
-          </button>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+            <button 
+              onClick={() => {
+                setEditingFaq(null);
+                setForm({ question: '', answer: '', category: 'General' });
+                setShowModal(true);
+              }} 
+              className="btn-primary px-6 py-3.5 flex items-center gap-2 group whitespace-nowrap"
+            >
+              <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+              Add Resource
+            </button>
+          </motion.div>
         )}
       </div>
 
-      {/* Search */}
-      <div className="relative group max-w-2xl">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+      {/* Control Bar */}
+      <div className="flex flex-col xl:flex-row gap-4 items-stretch xl:items-center">
+        <div className="flex-1 relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+          <input
+            type="text"
+            className="w-full px-11 py-3.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm font-bold text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+            placeholder="Search for articles, categories, or keywords..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <X size={14} />
+            </button>
+          )}
         </div>
-        <input
-          type="text"
-          className="input-field pl-12 py-4 text-base shadow-sm border-gray-100 dark:border-gray-800"
-          placeholder="Search for answers..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
       </div>
 
       {/* FAQ List */}
-      <div className="grid grid-cols-1 gap-4">
-        {loading ? (
-          <div className="py-20 flex justify-center">
-            <div className="flex gap-2">
-              {[0, 1, 2].map(i => (
-                <div key={i} className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
-              ))}
-            </div>
-          </div>
-        ) : filteredFaqs.length === 0 ? (
-          <div className="card p-12 text-center bg-gray-50/50 dark:bg-gray-900/30">
-            <HelpCircle size={48} className="mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">No results found</h3>
-            <p className="text-gray-500 mt-1 font-medium">Try different keywords or contact our support team.</p>
-          </div>
-        ) : (
-          filteredFaqs.map((faq) => (
-            <div key={faq._id} className={`card transition-all duration-200 border-gray-100 dark:border-gray-800 ${expandedId === faq._id ? 'ring-2 ring-primary/5 shadow-md' : ''}`}>
-              <button
-                onClick={() => setExpandedId(expandedId === faq._id ? null : faq._id)}
-                className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                   <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 rounded-md">{faq.category}</span>
-                   <span className="text-base font-bold text-gray-900 dark:text-white">{faq.question}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  {isAdmin && (
-                    <div className="hidden sm:flex items-center gap-2 mr-4" onClick={(e) => e.stopPropagation()}>
-                      <button 
-                        onClick={() => {
-                          setEditingFaq(faq);
-                          setForm({ question: faq.question, answer: faq.answer, category: faq.category });
-                          setShowModal(true);
-                        }}
-                        className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button 
-                        onClick={() => deleteFaq(faq._id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+      <div className="space-y-4 min-h-[400px]">
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-32 flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Indexing knowledge base...</p>
+            </motion.div>
+          ) : filteredFaqs.length === 0 ? (
+            <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card py-32 flex flex-col items-center text-center">
+              <div className="w-20 h-20 rounded-3xl bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center mb-6">
+                <Search size={32} className="text-gray-300 dark:text-gray-600" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white">No results found</h3>
+              <p className="text-sm text-gray-500 mt-2 max-w-sm leading-relaxed font-medium">
+                We couldn't find anything matching "{searchTerm}". Try broadening your search or creating a support ticket.
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div key="list" variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 gap-3">
+              {filteredFaqs.map((faq) => (
+                <motion.div 
+                  key={faq._id} 
+                  variants={itemVariants}
+                  className={`card overflow-hidden transition-all duration-300 ${expandedId === faq._id ? 'ring-2 ring-primary/20 shadow-xl shadow-primary/5' : 'hover:border-gray-300 dark:hover:border-gray-600'}`}
+                >
+                  <button
+                    onClick={() => setExpandedId(expandedId === faq._id ? null : faq._id)}
+                    className="w-full px-8 py-6 flex items-center justify-between text-left group"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                       <span className="text-[9px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2.5 py-1 rounded-lg self-start sm:self-center whitespace-nowrap">
+                         {faq.category}
+                       </span>
+                       <span className="text-base font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                         {faq.question}
+                       </span>
                     </div>
-                  )}
-                  {expandedId === faq._id ? <ChevronUp size={20} className="text-primary" /> : <ChevronDown size={20} className="text-gray-400" />}
-                </div>
-              </button>
-              {expandedId === faq._id && (
-                <div className="px-6 pb-6 pt-2 animate-in slide-in-from-top-2 duration-200">
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
-                      {faq.answer}
-                    </p>
-                  </div>
-                  {isAdmin && (
-                     <div className="flex sm:hidden items-center gap-4 mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                        <button onClick={() => {
-                          setEditingFaq(faq);
-                          setForm({ question: faq.question, answer: faq.answer, category: faq.category });
-                          setShowModal(true);
-                        }} className="text-sm font-bold text-primary">Edit</button>
-                        <button onClick={() => deleteFaq(faq._id)} className="text-sm font-bold text-red-600">Delete</button>
-                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))
-        )}
+                    <div className="flex items-center gap-4 ml-4">
+                      {isAdmin && (
+                        <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                          <button 
+                            onClick={() => {
+                              setEditingFaq(faq);
+                              setForm({ question: faq.question, answer: faq.answer, category: faq.category });
+                              setShowModal(true);
+                            }}
+                            className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button 
+                            onClick={() => deleteFaq(faq._id)}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      )}
+                      <div className={`p-1.5 rounded-lg transition-all duration-300 ${expandedId === faq._id ? 'bg-primary text-white rotate-180' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
+                        <ChevronDown size={16} />
+                      </div>
+                    </div>
+                  </button>
+                  
+                  <AnimatePresence>
+                    {expandedId === faq._id && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      >
+                        <div className="px-8 pb-8 pt-2">
+                          <div className="h-px w-full bg-gray-100 dark:bg-gray-800 mb-6" />
+                          <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <p className="text-gray-600 dark:text-gray-400 leading-relaxed font-medium text-sm">
+                              {faq.answer}
+                            </p>
+                          </div>
+                          {isAdmin && (
+                             <div className="flex md:hidden items-center gap-6 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                                <button onClick={() => {
+                                  setEditingFaq(faq);
+                                  setForm({ question: faq.question, answer: faq.answer, category: faq.category });
+                                  setShowModal(true);
+                                }} className="text-xs font-black text-primary uppercase tracking-widest">Edit Entry</button>
+                                <button onClick={() => deleteFaq(faq._id)} className="text-xs font-black text-red-500 uppercase tracking-widest">Delete Entry</button>
+                             </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* CTA Section */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mt-12">
+        <div className="p-10 bg-gradient-to-br from-primary/10 via-orange-500/5 to-transparent border border-primary/10 rounded-[3rem] relative group overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Sparkles size={120} className="text-primary" />
+           </div>
+           
+           <div className="flex items-center gap-6 text-center md:text-left z-10">
+              <div className="w-16 h-16 bg-primary rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl shadow-primary/30 relative">
+                 <Zap size={30} fill="currentColor" />
+                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-4 border-white dark:border-[#0D0D10] rounded-full" />
+              </div>
+              <div className="space-y-1">
+                 <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Need dedicated support?</h4>
+                 <p className="text-sm text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">Our agents are standing by to assist you 24/7</p>
+              </div>
+           </div>
+           
+           <button 
+             onClick={() => navigate('/chat')} 
+             className="btn-primary px-10 py-4 rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all flex items-center gap-3 z-10"
+           >
+             Message X1 Chat <ArrowRight size={18} />
+           </button>
+        </div>
+      </motion.div>
 
       {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-950/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-3xl max-w-xl w-full shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="px-8 py-6 border-b border-gray-50 dark:border-gray-800 flex justify-between items-center bg-gray-50/30 dark:bg-gray-900/30">
-              <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
-                {editingFaq ? 'Edit FAQ' : 'Add FAQ'}
-              </h2>
-              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-400">
-                <X size={20} />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Category</label>
-                <input
-                  type="text"
-                  required
-                  className="input-field"
-                  placeholder="e.g. Billing, Technical"
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                />
+      <AnimatePresence>
+        {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-gray-900/60 backdrop-blur-md"
+              onClick={() => setShowModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-xl bg-white dark:bg-[#0D0D10] rounded-[2.5rem] shadow-2xl border border-white/10 overflow-hidden"
+            >
+              <div className="px-10 py-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                    {editingFaq ? 'Modify Article' : 'New Article'}
+                  </h2>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Update knowledge base content</p>
+                </div>
+                <button onClick={() => setShowModal(false)} className="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-red-500 transition-all">
+                  <X size={20} />
+                </button>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Question</label>
-                <input
-                  type="text"
-                  required
-                  className="input-field"
-                  placeholder="What is the question?"
-                  value={form.question}
-                  onChange={(e) => setForm({ ...form, question: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Answer</label>
-                <textarea
-                  required
-                  rows={5}
-                  className="input-field resize-none"
-                  placeholder="Provide a detailed answer..."
-                  value={form.answer}
-                  onChange={(e) => setForm({ ...form, answer: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-4 pt-4">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 btn-secondary py-3">Cancel</button>
-                <button type="submit" className="flex-1 btn-primary py-3">Save FAQ</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+              
+              <form onSubmit={handleSubmit} className="p-10 space-y-8">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Category Label</label>
+                  <div className="relative group">
+                    <Filter className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={18} />
+                    <input
+                      type="text" required className="w-full pl-14 pr-6 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      placeholder="e.g. Billing, Technical, Accounts"
+                      value={form.category}
+                      onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    />
+                  </div>
+                </div>
 
-      {/* CTA */}
-      <div className="card p-8 bg-primary/5 border-primary/10 flex flex-col sm:flex-row items-center justify-between gap-6">
-         <div className="flex items-center gap-4 text-center sm:text-left">
-            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-               <MessageSquare size={24} />
-            </div>
-            <div>
-               <h4 className="text-lg font-bold">Still need help?</h4>
-               <p className="text-sm text-gray-500 font-medium">Our support team is here to assist you 24/7.</p>
-            </div>
-         </div>
-         <button onClick={() => navigate('/chat')} className="btn-primary px-8">Contact Support</button>
-      </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">The Question</label>
+                  <div className="relative group">
+                    <Info className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={18} />
+                    <input
+                      type="text" required className="w-full pl-14 pr-6 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      placeholder="e.g. How do I reset my password?"
+                      value={form.question}
+                      onChange={(e) => setForm({ ...form, question: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Detailed Answer</label>
+                  <textarea
+                    required rows={5} className="w-full px-6 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                    placeholder="Provide a comprehensive explanation..."
+                    value={form.answer}
+                    onChange={(e) => setForm({ ...form, answer: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-2xl text-xs font-black uppercase tracking-widest">Discard</button>
+                  <button type="submit" className="flex-[2] py-4 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:-translate-y-0.5 transition-all">Publish Resource</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
