@@ -18,8 +18,10 @@ export default function Settings({ isDark, toggleTheme }) {
   });
 
   const getInitials = (name) => {
-    return (name ?? 'User')
+    if (!name) return 'U';
+    return name
       .split(' ')
+      .filter(Boolean)
       .map((n) => n[0])
       .join('')
       .toUpperCase()
@@ -27,13 +29,21 @@ export default function Settings({ isDark, toggleTheme }) {
   };
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText(user?.email || '');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const email = user?.email ?? '';
+    if (email) {
+      navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const handleNotificationChange = (key) => {
     setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleLogoutClick = () => {
+    logout();
+    window.location.href = '/login';
   };
 
   return (
@@ -48,12 +58,12 @@ export default function Settings({ isDark, toggleTheme }) {
           <div className="flex-1">
             <div className="mb-4">
               <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Name</label>
-              <p className="text-lg font-medium text-gray-900 dark:text-white">{user?.name || 'User'}</p>
+              <p className="text-lg font-medium text-gray-900 dark:text-white">{user?.name ?? 'User'}</p>
             </div>
             <div>
               <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Email</label>
               <div className="flex items-center gap-2">
-                <p className="text-gray-900 dark:text-white">{user?.email}</p>
+                <p className="text-gray-900 dark:text-white">{user?.email ?? 'No email'}</p>
                 <button
                   onClick={handleCopyEmail}
                   className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -87,7 +97,7 @@ export default function Settings({ isDark, toggleTheme }) {
               </div>
               <input
                 type="checkbox"
-                checked={notifications[key]}
+                checked={notifications[key] ?? false}
                 onChange={() => handleNotificationChange(key)}
                 className="w-5 h-5 rounded border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer"
               />
@@ -128,7 +138,7 @@ export default function Settings({ isDark, toggleTheme }) {
           <Lock size={20} className="text-orange-500" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Security</h2>
         </div>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={e => e.preventDefault()}>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Current password
@@ -204,10 +214,7 @@ export default function Settings({ isDark, toggleTheme }) {
       {/* Logout Section */}
       <div className="flex justify-end">
         <button
-          onClick={() => {
-            logout();
-            window.location.href = '/login';
-          }}
+          onClick={handleLogoutClick}
           className="px-6 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/50 font-medium transition-colors flex items-center gap-2"
         >
           <LogOut size={16} />

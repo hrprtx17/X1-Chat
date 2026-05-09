@@ -1,14 +1,32 @@
 import axios from 'axios';
-import { getToken } from './auth';
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  baseURL: import.meta.env.VITE_API_URL || 'https://x1-chat-app.onrender.com/api',
+  timeout: 30000,
 });
 
 API.interceptors.request.use((req) => {
-  const token = getToken();
-  if (token) req.headers.Authorization = `Bearer ${token}`;
+  try {
+    const token = localStorage.getItem('token');
+    if (token) req.headers.Authorization = `Bearer ${token}`;
+  } catch (e) {
+    console.error('Token read error:', e);
+  }
   return req;
 });
+
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default API;

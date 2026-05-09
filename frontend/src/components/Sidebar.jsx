@@ -26,8 +26,10 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
   ];
 
   const getInitials = (name) => {
-    return (name ?? 'User')
+    if (!name) return 'U';
+    return name
       .split(' ')
+      .filter(Boolean)
       .map((n) => n[0])
       .join('')
       .toUpperCase()
@@ -36,7 +38,7 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
 
   const handleNavClick = (path) => {
     navigate(path);
-    setMobileOpen(false);
+    if (setMobileOpen) setMobileOpen(false);
   };
 
   const handleLogout = () => {
@@ -56,7 +58,7 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-        {navItems
+        {(navItems ?? [])
           .filter((item) => !item.adminOnly || isAdmin)
           .map((item) => {
             const Icon = item.icon;
@@ -88,10 +90,10 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-              {user?.name || 'User'}
+              {user?.name ?? 'User'}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              {user?.email || 'user@example.com'}
+              {user?.email ?? 'No email'}
             </p>
           </div>
         </div>
@@ -129,7 +131,7 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
       {isMobileOpen && (
         <div
           className="fixed inset-0 bg-gray-900/50 z-40 md:hidden backdrop-blur-sm"
-          onClick={() => setMobileOpen(false)}
+          onClick={() => setMobileOpen && setMobileOpen(false)}
         />
       )}
 

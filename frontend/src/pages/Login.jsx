@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
+import API from '../utils/axios';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -13,13 +14,33 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    
     setLoading(true);
     try {
-      await login(email, password);
-      toast.success('Welcome back!');
-      navigate('/dashboard');
+      const { data } = await API.post('/auth/login', { email, password });
+      
+      if (data?.user && data?.token) {
+        login(data.user, data.token);
+        toast.success('Welcome back!');
+        
+        // Use setTimeout to ensure context state is updated before navigation
+        setTimeout(() => {
+          if (data.user.role === 'admin') {
+            navigate('/dashboard');
+          } else {
+            navigate('/chat');
+          }
+        }, 100);
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Login failed');
+      console.error('Login error:', error);
+      toast.error(error.response?.data?.message || 'Login failed. Check credentials.');
     } finally {
       setLoading(false);
     }

@@ -1,19 +1,32 @@
-export const getToken = () => localStorage.getItem('token');
-export const getUser = () => {
-  const raw = localStorage.getItem('user');
-  if (!raw) return null;
-
+export const getToken = () => {
   try {
+    return localStorage.getItem('token') || null;
+  } catch (e) {
+    console.error('Error reading token from localStorage:', e);
+    return null;
+  }
+};
+
+export const getUser = () => {
+  try {
+    const raw = localStorage.getItem('user');
+    if (!raw) return null;
     return JSON.parse(raw);
-  } catch {
-    // Recover gracefully if localStorage gets corrupted.
+  } catch (e) {
+    console.error('Error reading user from localStorage:', e);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     return null;
   }
 };
-export const isLoggedIn = () => !!localStorage.getItem('token');
+
+export const isLoggedIn = () => !!getToken();
+
 export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+  try {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  } catch (e) {
+    console.error('Error during logout:', e);
+  }
 };

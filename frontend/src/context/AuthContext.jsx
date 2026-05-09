@@ -5,18 +5,18 @@ import API from '../utils/axios';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(getUser() || null);
-  const [token, setToken] = useState(getToken() || null);
+  const [user, setUser] = useState(getUser());
+  const [token, setToken] = useState(getToken());
 
-  const login = async (email, password) => {
-    const res = await API.post('/auth/login', { email, password });
-    const { token: userToken, user: userData } = res.data;
-    
-    localStorage.setItem('token', userToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    setToken(userToken);
-    return res.data;
+  const login = (userData, userToken) => {
+    try {
+      localStorage.setItem('token', userToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+      setToken(userToken);
+    } catch (e) {
+      console.error('Error saving auth data:', e);
+    }
   };
 
   const register = async (name, email, password) => {
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
-  // Provide a safe default user object if null
+  // Provide a safe default user object if null for rendering
   const safeUser = user || { name: 'User', email: '', role: 'user' };
 
   return (
@@ -40,6 +40,11 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-
 // eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

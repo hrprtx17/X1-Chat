@@ -4,49 +4,109 @@ import {
   Send, 
   Bot, 
   User as UserIcon, 
-  Loader2, 
   Trash2, 
-  MessageSquare,
   Plus,
-  ArrowLeft
+  Ticket as TicketIcon
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
 export default function Chat() {
   const { user } = useAuth();
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hello! I'm your X1 AI assistant. How can I help you today?" }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const scrollRef = useRef();
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const loadHistory = async () => {
+      try {
+        setHistoryLoading(true);
+        const { data } = await API.get('/chat/history');
+        if (data && data.length > 0) {
+          // Convert history to message format (history comes in reverse chronological order usually)
+          const historyMessages = [];
+          [...data].reverse().forEach(chat => {
+            historyMessages.push({ role: 'user', text: chat.userMessage });
+            historyMessages.push({ role: 'bot', text: chat.botReply });
+          });
+          setMessages(historyMessages);
+        } else {
+          // Show welcome message if no history
+          setMessages([{
+            role: 'bot',
+            text: `Hi ${user?.name?.split(' ')[0] ?? 'there'} 👋 I'm X1, your AI support assistant. How can I help you today?`
+          }]);
+        }
+      } catch (err) {
+        console.error('Failed to load history:', err);
+        setMessages([{
+          role: 'bot', 
+          text: 'Hi! How can I help you today?'
+        }]);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+    loadHistory();
+  }, [user]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, loading]);
 
   const handleSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
+    if (e) e.preventDefault();
+    const text = input.trim();
+    if (!text || loading) return;
 
-    const userMsg = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
     setInput('');
+    setMessages(prev => [...prev, { role: 'user', text }]);
     setLoading(true);
 
     try {
-      const res = await API.post('/chat', { 
-        message: input // Backend expects 'message' string
-      });
-      setMessages(prev => [...prev, { role: 'assistant', content: res.data.reply }]); // Backend returns 'reply'
+      const { data } = await API.post('/chat', { message: text });
+      
+      setMessages(prev => [...prev, { role: 'bot', text: data.reply }]);
+      
+      if (data.escalated || data.ticketCreated) {
+        setMessages(prev => [...prev, {
+          role: 'system',
+          text: '🎫 A support ticket has been automatically created for your issue.'
+        }]);
+      }
     } catch (err) {
-      toast.error('AI is currently unavailable');
-      setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I encountered an error. Please try again later." }]);
+      console.error('Chat error:', err);
+      setMessages(prev => [...prev, { 
+        role: 'bot', 
+        text: 'Sorry, I encountered an error. Please try again.' 
+      }]);
+      toast.error('Failed to send message');
     } finally {
       setLoading(false);
     }
   };
+
+  const startNewChat = () => {
+    setMessages([{
+      role: 'bot',
+      text: `Hi ${user?.name?.split(' ')[0] ?? 'there'} 👋 Starting a new conversation. How can I help?`
+    }]);
+  };
+
+  const LoadingSpinner = () => (
+    <div className="flex gap-2 p-1">
+      {[0, 1, 2].map(i => (
+        <div key={i} 
+          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" 
+          style={{ animationDelay: `${i * 150}ms` }} 
+        />
+      ))}
+    </div>
+  );
 
   return (
     <div className="h-full flex flex-col bg-[#F9FAFB] dark:bg-gray-950 fade-in">
@@ -57,24 +117,20 @@ export default function Chat() {
             <Bot size={24} />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">AI Chatbot</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">AI Assistant</h1>
             <div className="flex items-center gap-1.5 text-xs text-green-500 font-medium">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              AI Assistant Online
+              Online
             </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setMessages([{ role: 'assistant', content: "Hello! I'm your X1 AI assistant. How can I help you today?" }])}
+            onClick={startNewChat}
             className="btn-secondary px-3 py-2 text-sm"
           >
-            <Trash2 size={16} className="mr-2" />
-            Clear
-          </button>
-          <button className="btn-primary px-3 py-2 text-sm">
             <Plus size={16} className="mr-2" />
-            New Session
+            New Chat
           </button>
         </div>
       </div>
@@ -82,43 +138,53 @@ export default function Chat() {
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto px-4 md:px-0 py-8">
         <div className="max-w-3xl mx-auto space-y-6">
-          {messages.map((msg, i) => (
-            <div 
-              key={i} 
-              className={`flex items-start gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-            >
-              <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center border ${
-                msg.role === 'assistant' 
-                  ? 'bg-white border-gray-200 text-primary dark:bg-gray-800 dark:border-gray-700' 
-                  : 'bg-primary border-primary text-white shadow-sm'
-              }`}>
-                {msg.role === 'assistant' ? <Bot size={18} /> : <UserIcon size={18} />}
+          {historyLoading ? (
+             <div className="flex justify-center py-20">
+                <LoadingSpinner />
+             </div>
+          ) : (
+            messages.map((msg, i) => (
+              <div 
+                key={i} 
+                className={`flex items-start gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+              >
+                {msg.role === 'system' ? (
+                  <div className="w-full flex justify-center">
+                    <div className="bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 px-4 py-2 rounded-lg border border-orange-100 dark:border-orange-800/30 text-xs font-medium flex items-center gap-2">
+                      <TicketIcon size={14} />
+                      {msg.text}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center border ${
+                      msg.role === 'bot' 
+                        ? 'bg-white border-gray-200 text-primary dark:bg-gray-800 dark:border-gray-700' 
+                        : 'bg-primary border-primary text-white shadow-sm'
+                    }`}>
+                      {msg.role === 'bot' ? <Bot size={18} /> : <UserIcon size={18} />}
+                    </div>
+                    <div className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'items-end' : ''}`}>
+                      <div className={`px-5 py-3 rounded-2xl text-sm leading-relaxed ${
+                        msg.role === 'bot' 
+                          ? 'bg-white text-gray-800 border border-gray-200 shadow-sm dark:bg-gray-900 dark:text-gray-200 dark:border-gray-800 rounded-tl-none' 
+                          : 'bg-primary text-white shadow-sm rounded-tr-none'
+                      }`}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'items-end' : ''}`}>
-                <div className={`px-5 py-3 rounded-2xl text-sm leading-relaxed ${
-                  msg.role === 'assistant' 
-                    ? 'bg-white text-gray-800 border border-gray-200 shadow-sm dark:bg-gray-900 dark:text-gray-200 dark:border-gray-800 rounded-tl-none' 
-                    : 'bg-primary text-white shadow-sm rounded-tr-none'
-                }`}>
-                  {msg.content}
-                </div>
-                <span className="mt-1.5 text-[10px] text-gray-400 font-medium px-1 uppercase tracking-wider">
-                  {msg.role === 'assistant' ? 'AI Assistant' : user?.name || 'You'} • Just now
-                </span>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
           {loading && (
-            <div className="flex items-start gap-4 animate-pulse">
+            <div className="flex items-start gap-4">
               <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-300 dark:bg-gray-800 dark:border-gray-700">
                 <Bot size={18} />
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm dark:bg-gray-900 dark:border-gray-800">
-                <div className="flex gap-1.5 py-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:0.2s]" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce [animation-delay:0.4s]" />
-                </div>
+                <LoadingSpinner />
               </div>
             </div>
           )}
@@ -131,8 +197,9 @@ export default function Chat() {
         <form onSubmit={handleSend} className="max-w-3xl mx-auto relative">
           <input
             type="text"
-            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl pl-5 pr-14 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-inner text-gray-800 dark:text-gray-200"
-            placeholder="Type your message here..."
+            disabled={loading}
+            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl pl-5 pr-14 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-inner text-gray-800 dark:text-gray-200 disabled:opacity-50"
+            placeholder={loading ? "AI is thinking..." : "Ask me anything..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
@@ -145,7 +212,7 @@ export default function Chat() {
           </button>
         </form>
         <p className="text-center text-[10px] text-gray-400 mt-3 font-medium uppercase tracking-widest">
-          X1 AI can make mistakes. Check important info.
+          X1 AI is here to help. Important information should be verified.
         </p>
       </div>
     </div>

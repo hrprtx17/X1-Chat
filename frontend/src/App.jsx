@@ -12,6 +12,7 @@ import Tickets from './pages/Tickets';
 import Dashboard from './pages/Dashboard';
 import FAQ from './pages/FAQ';
 import Settings from './pages/Settings';
+import { Toaster } from 'react-hot-toast';
 
 function AppLayoutWrapper({ children, isDark, toggleTheme }) {
   return <AppLayout isDark={isDark} toggleTheme={toggleTheme}>{children}</AppLayout>;
@@ -20,6 +21,7 @@ function AppLayoutWrapper({ children, isDark, toggleTheme }) {
 function AnimatedRoutes({ isDark, toggleTheme }) {
   const location = useLocation();
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <AnimatePresence mode="wait">
@@ -35,14 +37,18 @@ function AnimatedRoutes({ isDark, toggleTheme }) {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes with AppLayout */}
+          {/* Protected Routes */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <AppLayoutWrapper isDark={isDark} toggleTheme={toggleTheme}>
-                  <Dashboard isDark={isDark} />
-                </AppLayoutWrapper>
+                {isAdmin ? (
+                  <AppLayoutWrapper isDark={isDark} toggleTheme={toggleTheme}>
+                    <Dashboard isDark={isDark} />
+                  </AppLayoutWrapper>
+                ) : (
+                  <Navigate to="/chat" />
+                )}
               </ProtectedRoute>
             }
           />
@@ -70,12 +76,12 @@ function AnimatedRoutes({ isDark, toggleTheme }) {
             path="/faqs"
             element={
               <ProtectedRoute>
-                {user?.role === 'admin' ? (
+                {isAdmin ? (
                   <AppLayoutWrapper isDark={isDark} toggleTheme={toggleTheme}>
                     <FAQ isDark={isDark} />
                   </AppLayoutWrapper>
                 ) : (
-                  <Navigate to="/dashboard" />
+                  <Navigate to="/chat" />
                 )}
               </ProtectedRoute>
             }
@@ -100,13 +106,22 @@ function AnimatedRoutes({ isDark, toggleTheme }) {
 
 export default function App() {
   const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved) return saved === 'dark';
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved === 'dark';
+    } catch (e) {
+      console.error('Theme persistence error:', e);
+    }
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
   useEffect(() => {
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    try {
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    } catch (e) {
+      console.error('Error saving theme:', e);
+    }
+    
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
@@ -121,6 +136,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <Toaster position="top-right" />
         <AnimatedRoutes isDark={isDark} toggleTheme={toggleTheme} />
       </BrowserRouter>
     </AuthProvider>
