@@ -1,8 +1,20 @@
 import axios from 'axios';
 
-// The baseURL is determined by .env.development or .env.production
+/**
+ * Robust API configuration
+ * 1. Prioritizes VITE_API_URL if set (Vercel/Local .env)
+ * 2. Falls back to hardcoded Render URL in production mode
+ * 3. Falls back to localhost:5000 in development mode
+ */
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  return import.meta.env.PROD 
+    ? 'https://x1-chat-app.onrender.com/api' 
+    : 'http://localhost:5000/api';
+};
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: getBaseURL(),
   timeout: 30000,
   withCredentials: true,
 });
@@ -14,7 +26,7 @@ API.interceptors.request.use((req) => {
       req.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Debug logging for developers
+    // Always log the actual target URL in development to verify it's NOT localhost when it shouldn't be
     if (import.meta.env.DEV) {
       console.log(`📡 [API Request] ${req.method?.toUpperCase()} ${req.baseURL}${req.url}`);
     }
@@ -37,9 +49,10 @@ API.interceptors.response.use(
       }
     }
     
-    // Robust error logging
+    // Robust error logging for production debugging
     console.error('🔴 API Failure:', {
       endpoint: error.config?.url,
+      fullURL: `${error.config?.baseURL}${error.config?.url}`,
       status: error.response?.status,
       message: error.response?.data?.message || error.message
     });
