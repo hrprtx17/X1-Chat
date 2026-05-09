@@ -21,26 +21,29 @@ export default function Login() {
     
     setLoading(true);
     try {
+      console.log('Attempting login for:', email);
       const { data } = await API.post('/auth/login', { email, password });
       
       if (data?.user && data?.token) {
+        // Call login() from context first to update state and storage
         login(data.user, data.token);
+        console.log('Auth state updated, proceeding to navigate...');
+        
         toast.success('Welcome back!');
         
-        // Use setTimeout to ensure context state is updated before navigation
-        setTimeout(() => {
-          if (data.user.role === 'admin') {
-            navigate('/dashboard');
-          } else {
-            navigate('/chat');
-          }
-        }, 100);
+        // Ensure navigation happens AFTER state update
+        if (data.user.role === 'admin') {
+          navigate('/dashboard');
+        } else {
+          navigate('/chat');
+        }
       } else {
-        throw new Error('Invalid response from server');
+        throw new Error('Invalid server response');
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error.response?.data?.message || 'Login failed. Check credentials.');
+      const msg = error.response?.data?.message || 'Login failed. Check credentials.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -48,7 +51,7 @@ export default function Login() {
 
   const handleDemoLogin = () => {
     setEmail('admin@x1chat.com');
-    setPassword('password123');
+    setPassword('admin123'); // Updated to match user's demo credentials in instructions
   };
 
   return (
@@ -107,27 +110,10 @@ export default function Login() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-gray-900">
-                    Remember me
-                  </label>
-                </div>
-                <div className="font-medium text-primary hover:text-primary-600 cursor-pointer">
-                  Forgot your password?
-                </div>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary py-3 text-base shadow-sm"
+                className="w-full btn-primary py-3 text-base shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
                 {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
@@ -149,7 +135,7 @@ export default function Login() {
                   onClick={handleDemoLogin}
                   className="w-full btn-secondary py-2"
                 >
-                  Fill Demo Credentials
+                  Fill Admin Credentials
                 </button>
               </div>
             </div>
@@ -165,27 +151,8 @@ export default function Login() {
             <p className="text-xl text-primary-50">
               X1Chat learns from every conversation, helping your team resolve issues 10x faster with AI-powered support.
             </p>
-            
-            <div className="mt-12 space-y-6">
-              {[
-                'Centralize all customer channels',
-                'AI-driven responses and insights',
-                'Seamless team collaboration'
-              ].map((feature, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-white" />
-                  </div>
-                  <span className="text-lg font-medium">{feature}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
-        
-        {/* Subtle Decorative Element */}
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -top-24 -left-24 w-64 h-64 bg-black/10 rounded-full blur-3xl" />
       </div>
     </div>
   );

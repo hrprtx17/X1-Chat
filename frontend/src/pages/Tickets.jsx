@@ -50,7 +50,7 @@ export default function Tickets() {
   }, [user?.role, statusFilter, priorityFilter]);
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     fetchTickets();
   };
 
@@ -76,6 +76,7 @@ export default function Tickets() {
   };
 
   const deleteTicket = async (id) => {
+    if (!id) return;
     if (!window.confirm('Are you sure you want to delete this ticket?')) return;
     try {
       await API.delete(`/tickets/${id}`);
@@ -87,6 +88,7 @@ export default function Tickets() {
   };
 
   const updateStatus = async (id, status) => {
+    if (!id) return;
     try {
       await API.put(`/tickets/${id}`, { status });
       toast.success('Status updated');
@@ -94,6 +96,17 @@ export default function Tickets() {
     } catch (err) {
       toast.error('Failed to update status');
     }
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map(n => n?.[0] ?? '')
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   const getPriorityColor = (p = '') => {
@@ -185,9 +198,6 @@ export default function Tickets() {
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
           </div>
-          <button onClick={fetchTickets} className="btn-secondary px-3">
-            <Filter size={18} />
-          </button>
         </div>
       </div>
 
@@ -195,11 +205,10 @@ export default function Tickets() {
       <div className="card overflow-hidden">
         {loading ? (
           <LoadingSpinner />
-        ) : tickets.length === 0 ? (
+        ) : (tickets ?? []).length === 0 ? (
           <div className="text-center py-20 text-gray-500">
             <TicketIcon size={48} className="mx-auto mb-4 opacity-10" />
             <p className="text-lg font-medium">No tickets found</p>
-            <p className="text-sm">Try adjusting your filters or search terms.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -216,41 +225,41 @@ export default function Tickets() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
-                {tickets.map((ticket) => (
-                  <tr key={ticket._id} className="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                {(tickets ?? []).map((ticket) => (
+                  <tr key={ticket?._id ?? Math.random()} className="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs text-gray-400">
-                      #{ticket._id.slice(-6).toUpperCase()}
+                      #{ticket?._id?.slice(-6)?.toUpperCase() ?? 'N/A'}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
-                          {ticket.title}
+                        <span className="font-semibold text-gray-900 dark:text-white">
+                          {ticket?.title ?? 'No Subject'}
                         </span>
-                        <p className="text-xs text-gray-500 truncate max-w-[200px]">{ticket.description}</p>
+                        <p className="text-xs text-gray-500 truncate max-w-[200px]">{ticket?.description ?? ''}</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold">
-                          {(ticket.userId?.name ?? 'User').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                          {getInitials(ticket?.userId?.name)}
                         </div>
                         <span className="text-gray-700 dark:text-gray-300">
-                          {ticket.userId?.name ?? ticket.userId?.email ?? 'Unknown'}
+                          {ticket?.userId?.name ?? 'Unknown'}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-md text-[10px] font-bold border ${getPriorityColor(ticket.priority)}`}>
-                        {(ticket.priority ?? 'medium').toUpperCase()}
+                      <span className={`px-2 py-1 rounded-md text-[10px] font-bold border ${getPriorityColor(ticket?.priority)}`}>
+                        {(ticket?.priority ?? 'medium').toUpperCase()}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getStatusColor(ticket.status)}`} />
+                        <div className={`w-2 h-2 rounded-full ${getStatusColor(ticket?.status)}`} />
                         {user?.role === 'admin' ? (
                           <select 
-                            value={ticket.status} 
-                            onChange={(e) => updateStatus(ticket._id, e.target.value)}
+                            value={ticket?.status ?? 'open'} 
+                            onChange={(e) => updateStatus(ticket?._id, e.target.value)}
                             className="bg-transparent text-gray-700 dark:text-gray-300 focus:outline-none"
                           >
                             <option value="open">Open</option>
@@ -258,19 +267,16 @@ export default function Tickets() {
                             <option value="closed">Closed</option>
                           </select>
                         ) : (
-                          <span className="text-gray-700 dark:text-gray-300 capitalize">{ticket.status ?? 'open'}</span>
+                          <span className="text-gray-700 dark:text-gray-300 capitalize">{ticket?.status ?? 'open'}</span>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-500 text-xs">
-                      <div className="flex items-center gap-1">
-                        <Clock size={12} />
-                        {new Date(ticket.createdAt).toLocaleDateString('en-IN')}
-                      </div>
+                      {ticket?.createdAt ? new Date(ticket.createdAt).toLocaleDateString('en-IN') : 'recently'}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button 
-                        onClick={() => deleteTicket(ticket._id)}
+                        onClick={() => deleteTicket(ticket?._id)}
                         className="p-2 text-gray-400 hover:text-red-600 rounded-md transition-colors"
                       >
                         <X size={16} />

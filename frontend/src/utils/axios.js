@@ -8,7 +8,9 @@ const API = axios.create({
 API.interceptors.request.use((req) => {
   try {
     const token = localStorage.getItem('token');
-    if (token) req.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      req.headers.Authorization = `Bearer ${token}`;
+    }
   } catch (e) {
     console.error('Token read error:', e);
   }
@@ -19,10 +21,15 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        // Only redirect if not already on login page to avoid loops
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      } catch (e) {
+        console.error('Session cleanup error:', e);
       }
     }
     return Promise.reject(error);

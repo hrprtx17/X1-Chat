@@ -4,7 +4,7 @@ import API from '../utils/axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
-export default function FAQ({ isDark }) {
+export default function FAQ() {
   const { user } = useAuth();
   const [faqs, setFaqs] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -40,13 +40,13 @@ export default function FAQ({ isDark }) {
   }, [categoryFilter]);
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     fetchFAQs();
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!form.question.trim() || !form.answer.trim()) {
+    if (!form?.question?.trim() || !form?.answer?.trim()) {
       toast.error('Please fill in both question and answer');
       return;
     }
@@ -75,12 +75,12 @@ export default function FAQ({ isDark }) {
   const handleEdit = (faq) => {
     if (!faq) return;
     setForm({
-      question: faq.question ?? '',
-      answer: faq.answer ?? '',
-      category: faq.category ?? 'general',
-      isActive: faq.isActive !== false
+      question: faq?.question ?? '',
+      answer: faq?.answer ?? '',
+      category: faq?.category ?? 'general',
+      isActive: faq?.isActive !== false
     });
-    setEditingId(faq._id);
+    setEditingId(faq?._id);
     setShowModal(true);
   };
 
@@ -101,8 +101,8 @@ export default function FAQ({ isDark }) {
   const handleToggleActive = async (faq) => {
     if (!faq?._id) return;
     try {
-      await API.put(`/faqs/${faq._id}`, { isActive: !faq.isActive });
-      toast.success(`FAQ ${!faq.isActive ? 'activated' : 'deactivated'}`);
+      await API.put(`/faqs/${faq._id}`, { isActive: !faq?.isActive });
+      toast.success(`FAQ ${!faq?.isActive ? 'activated' : 'deactivated'}`);
       fetchFAQs();
     } catch (error) {
       console.error('Toggle FAQ error:', error);
@@ -184,11 +184,10 @@ export default function FAQ({ isDark }) {
       <div className="card overflow-hidden">
         {loading ? (
           <LoadingSpinner />
-        ) : faqs.length === 0 ? (
+        ) : (faqs ?? []).length === 0 ? (
           <div className="text-center py-20 text-gray-500">
             <HelpCircle size={48} className="mx-auto mb-4 opacity-10" />
             <p className="text-lg font-medium">No FAQs found</p>
-            <p className="text-sm">Try different keywords or filters.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -202,15 +201,15 @@ export default function FAQ({ isDark }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {faqs.map((faq) => (
-                  <tr key={faq._id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                {(faqs ?? []).map((faq) => (
+                  <tr key={faq?._id ?? Math.random()} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                     <td className="px-6 py-4">
-                      <p className="font-semibold text-gray-900 dark:text-white mb-1">{faq.question}</p>
-                      <p className="text-gray-500 dark:text-gray-400 text-xs line-clamp-2">{faq.answer}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white mb-1">{faq?.question ?? 'No Question'}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs line-clamp-2">{faq?.answer ?? ''}</p>
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 capitalize">
-                        {faq.category || 'general'}
+                        {faq?.category ?? 'general'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -218,13 +217,13 @@ export default function FAQ({ isDark }) {
                         onClick={() => isAdmin && handleToggleActive(faq)}
                         disabled={!isAdmin}
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                          faq.isActive !== false
+                          faq?.isActive !== false
                             ? 'bg-green-100 text-green-700 hover:bg-green-200'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         } ${!isAdmin && 'cursor-default'}`}
                       >
-                        <div className={`w-1.5 h-1.5 rounded-full ${faq.isActive !== false ? 'bg-green-600' : 'bg-gray-500'}`} />
-                        {faq.isActive !== false ? 'Active' : 'Draft'}
+                        <div className={`w-1.5 h-1.5 rounded-full ${faq?.isActive !== false ? 'bg-green-600' : 'bg-gray-500'}`} />
+                        {faq?.isActive !== false ? 'Active' : 'Draft'}
                       </button>
                     </td>
                     {isAdmin && (
@@ -238,7 +237,7 @@ export default function FAQ({ isDark }) {
                             <Edit2 size={16} />
                           </button>
                           <button
-                            onClick={() => handleDelete(faq._id)}
+                            onClick={() => handleDelete(faq?._id)}
                             className="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded-lg"
                             title="Delete"
                           >
@@ -275,7 +274,7 @@ export default function FAQ({ isDark }) {
                   required
                   className="input-field"
                   placeholder="What is the common question?"
-                  value={form.question}
+                  value={form?.question ?? ''}
                   onChange={e => setForm({ ...form, question: e.target.value })}
                 />
               </div>
@@ -286,7 +285,7 @@ export default function FAQ({ isDark }) {
                   rows={4}
                   className="input-field resize-none"
                   placeholder="Provide a clear, helpful answer..."
-                  value={form.answer}
+                  value={form?.answer ?? ''}
                   onChange={e => setForm({ ...form, answer: e.target.value })}
                 />
               </div>
@@ -295,7 +294,7 @@ export default function FAQ({ isDark }) {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                   <select
                     className="input-field"
-                    value={form.category}
+                    value={form?.category ?? 'general'}
                     onChange={e => setForm({ ...form, category: e.target.value })}
                   >
                     <option value="general">General</option>
@@ -307,13 +306,13 @@ export default function FAQ({ isDark }) {
                 <div className="flex items-end pb-2">
                    <button 
                     type="button"
-                    onClick={() => setForm({...form, isActive: !form.isActive})}
+                    onClick={() => setForm({...form, isActive: !form?.isActive})}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${
-                      form.isActive ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-600'
+                      form?.isActive ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-600'
                     }`}
                    >
-                     <ToggleRight size={20} className={form.isActive ? 'text-green-600' : 'text-gray-400'} />
-                     <span className="text-xs font-bold uppercase">{form.isActive ? 'Active' : 'Draft'}</span>
+                     <ToggleRight size={20} className={form?.isActive ? 'text-green-600' : 'text-gray-400'} />
+                     <span className="text-xs font-bold uppercase">{form?.isActive ? 'Active' : 'Draft'}</span>
                    </button>
                 </div>
               </div>

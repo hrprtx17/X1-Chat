@@ -1,46 +1,69 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { getUser, getToken, logout as authLogout } from '../utils/auth';
-import API from '../utils/axios';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(getUser());
-  const [token, setToken] = useState(getToken());
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Initialize from localStorage safely on mount
+  useEffect(() => {
+    const storedUser = getUser();
+    const storedToken = getToken();
+    if (storedUser && storedToken) {
+      setUser(storedUser);
+      setToken(storedToken);
+    }
+    setLoading(false);
+  }, []);
 
   const login = (userData, userToken) => {
     try {
+      if (!userData || !userToken) return;
+      
       localStorage.setItem('token', userToken);
       localStorage.setItem('user', JSON.stringify(userData));
+      
       setUser(userData);
       setToken(userToken);
+      
+      console.log('Login successful: State and localStorage updated');
     } catch (e) {
-      console.error('Error saving auth data:', e);
+      console.error('Error saving auth data during login:', e);
     }
   };
 
-  const register = async (name, email, password) => {
-    const res = await API.post('/auth/register', { name, email, password });
-    return res.data;
-  };
-
   const logout = () => {
-    authLogout();
-    setUser(null);
-    setToken(null);
+    try {
+      authLogout();
+      setUser(null);
+      setToken(null);
+      console.log('Logout successful: State and localStorage cleared');
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
   };
 
-  // Provide a safe default user object if null for rendering
-  const safeUser = user || { name: 'User', email: '', role: 'user' };
+  // Provide a safe default user object if null for rendering, 
+  // but keep user as null for logic checks like ProtectedRoute
+  const value = {
+    user,
+    token,
+    login,
+    logout,
+    isLoggedIn: !!token,
+    loading
+  };
 
   return (
-    <AuthContext.Provider value={{ user: safeUser, token, login, register, logout, isLoggedIn: !!token }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

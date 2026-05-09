@@ -12,7 +12,7 @@ export default function AppLayout({ children, isDark, toggleTheme }) {
     return name
       .split(' ')
       .filter(Boolean)
-      .map((n) => n[0])
+      .map((n) => n?.[0] ?? '')
       .join('')
       .toUpperCase()
       .slice(0, 2);

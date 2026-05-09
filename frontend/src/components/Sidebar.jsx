@@ -30,7 +30,7 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
     return name
       .split(' ')
       .filter(Boolean)
-      .map((n) => n[0])
+      .map((n) => n?.[0] ?? '')
       .join('')
       .toUpperCase()
       .slice(0, 2);

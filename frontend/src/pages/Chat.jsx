@@ -24,19 +24,17 @@ export default function Chat() {
       try {
         setHistoryLoading(true);
         const { data } = await API.get('/chat/history');
-        if (data && data.length > 0) {
-          // Convert history to message format (history comes in reverse chronological order usually)
+        if (Array.isArray(data) && data.length > 0) {
           const historyMessages = [];
           [...data].reverse().forEach(chat => {
-            historyMessages.push({ role: 'user', text: chat.userMessage });
-            historyMessages.push({ role: 'bot', text: chat.botReply });
+            if (chat?.userMessage) historyMessages.push({ role: 'user', text: chat.userMessage });
+            if (chat?.botReply) historyMessages.push({ role: 'bot', text: chat.botReply });
           });
           setMessages(historyMessages);
         } else {
-          // Show welcome message if no history
           setMessages([{
             role: 'bot',
-            text: `Hi ${user?.name?.split(' ')[0] ?? 'there'} 👋 I'm X1, your AI support assistant. How can I help you today?`
+            text: `Hi ${user?.name?.split(' ')?.filter(Boolean)?.[0] ?? 'there'} 👋 I'm X1, your AI support assistant. How can I help you today?`
           }]);
         }
       } catch (err) {
@@ -60,7 +58,7 @@ export default function Chat() {
 
   const handleSend = async (e) => {
     if (e) e.preventDefault();
-    const text = input.trim();
+    const text = input?.trim();
     if (!text || loading) return;
 
     setInput('');
@@ -70,9 +68,10 @@ export default function Chat() {
     try {
       const { data } = await API.post('/chat', { message: text });
       
-      setMessages(prev => [...prev, { role: 'bot', text: data.reply }]);
+      const reply = data?.reply || data?.message || "I'm sorry, I couldn't process that.";
+      setMessages(prev => [...prev, { role: 'bot', text: reply }]);
       
-      if (data.escalated || data.ticketCreated) {
+      if (data?.escalated || data?.ticketCreated) {
         setMessages(prev => [...prev, {
           role: 'system',
           text: '🎫 A support ticket has been automatically created for your issue.'
@@ -93,7 +92,7 @@ export default function Chat() {
   const startNewChat = () => {
     setMessages([{
       role: 'bot',
-      text: `Hi ${user?.name?.split(' ')[0] ?? 'there'} 👋 Starting a new conversation. How can I help?`
+      text: `Hi ${user?.name?.split(' ')?.filter(Boolean)?.[0] ?? 'there'} 👋 Starting a new conversation. How can I help?`
     }]);
   };
 
@@ -143,34 +142,34 @@ export default function Chat() {
                 <LoadingSpinner />
              </div>
           ) : (
-            messages.map((msg, i) => (
+            (messages ?? []).map((msg, i) => (
               <div 
                 key={i} 
-                className={`flex items-start gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                className={`flex items-start gap-4 ${msg?.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}
               >
-                {msg.role === 'system' ? (
+                {msg?.role === 'system' ? (
                   <div className="w-full flex justify-center">
                     <div className="bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 px-4 py-2 rounded-lg border border-orange-100 dark:border-orange-800/30 text-xs font-medium flex items-center gap-2">
                       <TicketIcon size={14} />
-                      {msg.text}
+                      {msg?.text ?? ''}
                     </div>
                   </div>
                 ) : (
                   <>
                     <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center border ${
-                      msg.role === 'bot' 
+                      msg?.role === 'bot' 
                         ? 'bg-white border-gray-200 text-primary dark:bg-gray-800 dark:border-gray-700' 
                         : 'bg-primary border-primary text-white shadow-sm'
                     }`}>
-                      {msg.role === 'bot' ? <Bot size={18} /> : <UserIcon size={18} />}
+                      {msg?.role === 'bot' ? <Bot size={18} /> : <UserIcon size={18} />}
                     </div>
-                    <div className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'items-end' : ''}`}>
+                    <div className={`flex flex-col max-w-[80%] ${msg?.role === 'user' ? 'items-end' : ''}`}>
                       <div className={`px-5 py-3 rounded-2xl text-sm leading-relaxed ${
-                        msg.role === 'bot' 
+                        msg?.role === 'bot' 
                           ? 'bg-white text-gray-800 border border-gray-200 shadow-sm dark:bg-gray-900 dark:text-gray-200 dark:border-gray-800 rounded-tl-none' 
                           : 'bg-primary text-white shadow-sm rounded-tr-none'
                       }`}>
-                        {msg.text}
+                        {msg?.text ?? ''}
                       </div>
                     </div>
                   </>
@@ -205,15 +204,12 @@ export default function Chat() {
           />
           <button
             type="submit"
-            disabled={loading || !input.trim()}
+            disabled={loading || !input?.trim()}
             className="absolute right-2 top-2 p-3 bg-primary text-white rounded-xl hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             <Send size={18} />
           </button>
         </form>
-        <p className="text-center text-[10px] text-gray-400 mt-3 font-medium uppercase tracking-widest">
-          X1 AI is here to help. Important information should be verified.
-        </p>
       </div>
     </div>
   );

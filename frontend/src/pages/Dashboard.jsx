@@ -37,11 +37,11 @@ export default function Dashboard() {
         setLoading(true);
         // Fetch stats
         const statsRes = await API.get('/chat/stats');
-        setStats(statsRes.data);
+        setStats(statsRes?.data || null);
 
         // Fetch recent tickets (admin only or user's own)
         const ticketsRes = await API.get(user?.role === 'admin' ? '/tickets/all' : '/tickets');
-        setRecentTickets((ticketsRes.data ?? []).slice(0, 5));
+        setRecentTickets((ticketsRes?.data ?? []).slice(0, 5));
       } catch (err) {
         console.error('Dashboard data fetch error:', err);
         toast.error('Failed to load dashboard data');
@@ -52,15 +52,15 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [user?.role]);
 
-  const chartData = stats?.last7Days?.map(d => ({ 
-    name: d._id, 
-    chats: d.count 
-  })) ?? [];
+  const chartData = (stats?.last7Days ?? []).map(d => ({ 
+    name: d?._id ?? 'Unknown', 
+    chats: d?.count ?? 0 
+  }));
 
-  const intentData = stats?.intentStats?.map(i => ({ 
-    name: i._id, 
-    count: i.count 
-  })) ?? [];
+  const intentData = (stats?.intentStats ?? []).map(i => ({ 
+    name: i?._id ?? 'Unknown', 
+    count: i?.count ?? 0 
+  }));
 
   const StatCard = ({ title, value, icon: Icon, color, loading }) => (
     <div className="card p-6">
@@ -83,6 +83,17 @@ export default function Dashboard() {
       )}
     </div>
   );
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map(n => n?.[0] ?? '')
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const LoadingSpinner = () => (
     <div className="flex items-center justify-center h-64">
@@ -109,10 +120,6 @@ export default function Dashboard() {
           </h1>
           <p className="text-gray-500 mt-1">Here's what's happening with your support channels today.</p>
         </div>
-        <button className="btn-primary">
-          <Plus size={18} className="mr-2" />
-          New Ticket
-        </button>
       </div>
 
       {/* Stats Grid */}
@@ -229,11 +236,11 @@ export default function Dashboard() {
             <h4 className="text-sm font-semibold text-gray-900 dark:text-white">AI Support Insights</h4>
             <div className="p-4 bg-orange-50 dark:bg-orange-900/10 rounded-lg border border-orange-100 dark:border-orange-800/30">
               <p className="text-xs text-orange-800 dark:text-orange-300 font-medium leading-relaxed">
-                {stats?.escalatedChats > 0 ? (
+                {(stats?.escalatedChats ?? 0) > 0 ? (
                   `⚠️ ${stats.escalatedChats} chats were escalated. Consider reviewing the most frequent issues.`
-                ) : stats?.openTickets > 0 ? (
+                ) : (stats?.openTickets ?? 0) > 0 ? (
                   `🎫 ${stats.openTickets} tickets are currently open and awaiting response.`
-                ) : stats?.totalChats === 0 ? (
+                ) : (stats?.totalChats ?? 0) === 0 ? (
                   "💬 No chats yet. Integrate the widget to start assisting customers."
                 ) : (
                   "✅ Everything looks good! AI is successfully handling customer queries."
@@ -248,7 +255,6 @@ export default function Dashboard() {
       <div className="card overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Tickets</h3>
-          <button className="text-primary text-sm font-medium hover:underline">View all</button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -264,7 +270,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {recentTickets.length === 0 ? (
+              {(recentTickets ?? []).length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
                     <div className="flex flex-col items-center gap-2 opacity-30">
@@ -275,45 +281,45 @@ export default function Dashboard() {
                 </tr>
               ) : (
                 recentTickets.map((ticket) => (
-                  <tr key={ticket._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <tr key={ticket?._id ?? Math.random()} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs text-gray-400">
-                      #{ticket._id.slice(-6).toUpperCase()}
+                      #{ticket?._id?.slice(-6)?.toUpperCase() ?? 'N/A'}
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                      {ticket.title ?? 'No Subject'}
+                      {ticket?.title ?? 'No Subject'}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold">
-                          {(ticket.userId?.name ?? 'User').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                          {getInitials(ticket?.userId?.name)}
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            {ticket.userId?.name ?? 'Unknown'}
+                            {ticket?.userId?.name ?? 'Unknown'}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`badge ${
-                        ticket.status === 'open' ? 'bg-green-100 text-green-700' : 
-                        ticket.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
+                        ticket?.status === 'open' ? 'bg-green-100 text-green-700' : 
+                        ticket?.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {ticket.status ?? 'unknown'}
+                        {ticket?.status ?? 'unknown'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`text-xs font-medium ${
-                        ticket.priority === 'high' || ticket.priority === 'critical' ? 'text-red-600' : 
-                        ticket.priority === 'medium' ? 'text-orange-600' : 
+                        ticket?.priority === 'high' || ticket?.priority === 'critical' ? 'text-red-600' : 
+                        ticket?.priority === 'medium' ? 'text-orange-600' : 
                         'text-gray-500'
                       }`}>
-                        {ticket.priority ?? 'low'}
+                        {ticket?.priority ?? 'low'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-xs text-gray-500">
-                      {new Date(ticket.createdAt).toLocaleDateString()}
+                      {ticket?.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'recently'}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button className="text-gray-400 hover:text-gray-600">

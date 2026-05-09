@@ -26,7 +26,8 @@ export default function Register() {
       navigate('/login');
     } catch (error) {
       console.error('Registration error:', error);
-      toast.error(error.response?.data?.message || 'Registration failed');
+      const msg = error.response?.data?.message || 'Registration failed. Please try again.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -42,36 +43,13 @@ export default function Register() {
             <p className="text-xl text-primary-50">
               Join 1,000+ companies using X1Chat to deliver exceptional customer experiences without the overhead.
             </p>
-            
-            <div className="mt-12 grid grid-cols-2 gap-8">
-              <div>
-                <p className="text-3xl font-bold">99.9%</p>
-                <p className="text-primary-100 text-sm">Uptime SLA</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold">10x</p>
-                <p className="text-primary-100 text-sm">Faster resolution</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold">24/7</p>
-                <p className="text-primary-100 text-sm">AI Monitoring</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold">Unlimited</p>
-                <p className="text-primary-100 text-sm">Integrations</p>
-              </div>
-            </div>
           </div>
         </div>
-        
-        {/* Subtle Decorative Element */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-black/10 rounded-full blur-3xl" />
       </div>
 
       {/* Right Side: Form */}
       <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
+        <div className="mx-auto w-full max-sm lg:w-96">
           <div className="flex items-center gap-2 mb-8">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xl">
               X1
@@ -140,25 +118,10 @@ export default function Register() {
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  id="terms"
-                  name="terms"
-                  type="checkbox"
-                  required
-                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                />
-                <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-                  I agree to the{' '}
-                  <span className="text-primary hover:underline cursor-pointer">Terms of Service</span> and{' '}
-                  <span className="text-primary hover:underline cursor-pointer">Privacy Policy</span>
-                </label>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary py-3 text-base shadow-sm"
+                className="w-full btn-primary py-3 text-base shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Creating account...' : 'Get Started'}
                 {!loading && <ArrowRight className="ml-2 h-5 w-5" />}

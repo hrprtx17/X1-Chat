@@ -1,4 +1,4 @@
-export const getToken = () => {
+export const getStoredToken = () => {
   try {
     return localStorage.getItem('token') || null;
   } catch (e) {
@@ -7,20 +7,20 @@ export const getToken = () => {
   }
 };
 
-export const getUser = () => {
+export const getStoredUser = () => {
   try {
-    const raw = localStorage.getItem('user');
-    if (!raw) return null;
-    return JSON.parse(raw);
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
   } catch (e) {
     console.error('Error reading user from localStorage:', e);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
     return null;
   }
 };
 
-export const isLoggedIn = () => !!getToken();
+export const getToken = getStoredToken;
+export const getUser = getStoredUser;
+
+export const isLoggedIn = () => !!getStoredToken();
 
 export const logout = () => {
   try {
