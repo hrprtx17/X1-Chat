@@ -30,8 +30,11 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
+  // Provide a safe default user object if null
+  const safeUser = user || { name: 'User', email: '', role: 'user' };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isLoggedIn: !!token }}>
+    <AuthContext.Provider value={{ user: safeUser, token, login, register, logout, isLoggedIn: !!token }}>
       {children}
     </AuthContext.Provider>
   );
