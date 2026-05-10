@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Ticket, MessageSquare,
-  HelpCircle, Settings, LogOut, Moon, Sun, 
+  HelpCircle, Settings, LogOut, Moon, Sun,
   ChevronRight, ChevronLeft, User, Zap, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -74,7 +74,7 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
       {/* Header / Logo */}
       <div className={`px-6 py-8 flex items-center transition-all duration-300 ${collapsed ? 'justify-center' : 'justify-between'}`}>
         <div className="flex items-center gap-4">
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="w-10 h-10 bg-gradient-to-br from-primary to-orange-600 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-primary/25 shrink-0 cursor-pointer"
@@ -83,7 +83,7 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
             X1
           </motion.div>
           {!collapsed && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col"
@@ -114,32 +114,29 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
             <button
               key={item.path}
               onClick={() => handleNavClick(item.path)}
-              className={`relative w-full flex items-center transition-all duration-300 rounded-2xl group ${
-                collapsed ? 'justify-center p-3.5' : 'gap-4 px-4 py-3.5'
-              } ${isActive ? 'bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.1)]' : 'hover:bg-gray-50 dark:hover:bg-gray-800/40'}`}
+              className={`relative w-full flex items-center transition-all duration-300 rounded-2xl group ${collapsed ? 'justify-center p-3.5' : 'gap-4 px-4 py-3.5'
+                } ${isActive ? 'bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.1)]' : 'hover:bg-gray-50 dark:hover:bg-gray-800/40'}`}
             >
               {isActive && (
-                <motion.div 
+                <motion.div
                   layoutId="active-indicator"
                   className="absolute left-0 w-1.5 h-6 bg-primary rounded-r-full shadow-[0_0_15px_rgba(249,115,22,0.5)]"
                 />
               )}
               <Icon
                 size={collapsed ? 20 : 18}
-                className={`shrink-0 transition-all duration-300 ${
-                  isActive ? 'text-primary scale-110' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110'
-                }`}
+                className={`shrink-0 transition-all duration-300 ${isActive ? 'text-primary scale-110' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110'
+                  }`}
               />
               {!collapsed && (
-                <span className={`text-sm font-bold tracking-tight transition-colors ${
-                  isActive ? 'text-primary' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
-                }`}>
+                <span className={`text-sm font-bold tracking-tight transition-colors ${isActive ? 'text-primary' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
+                  }`}>
                   {item.label}
                 </span>
               )}
               {!collapsed && isActive && (
                 <motion.div initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} className="ml-auto">
-                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-ring" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-ring" />
                 </motion.div>
               )}
             </button>
@@ -199,7 +196,7 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
 
         {/* Collapse Toggle (Desktop Only) */}
         <div className="hidden md:flex justify-center pt-2">
-          <button 
+          <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all shadow-sm"
           >
@@ -213,7 +210,7 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
   return (
     <>
       {/* Desktop */}
-      <motion.aside 
+      <motion.aside
         initial={false}
         animate={isCollapsed ? 'collapsed' : 'expanded'}
         variants={sidebarVariants}
