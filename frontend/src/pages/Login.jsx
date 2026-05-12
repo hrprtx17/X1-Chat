@@ -21,7 +21,7 @@ export default function Login() {
     try {
       const data = await login(email, password);
       toast.success('Welcome back!');
-      navigate(data.user.role === 'admin' ? '/dashboard' : '/chat');
+      navigate(data.user.role === 'admin' ? '/dashboard' : '/workspace-setup');
     } catch (error) {
       toast.error(error.message);
     } finally {

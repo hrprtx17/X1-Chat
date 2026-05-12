@@ -10,6 +10,8 @@ import Register from './pages/Register';
 import Chat from './pages/Chat';
 import Tickets from './pages/Tickets';
 import Dashboard from './pages/Dashboard';
+import WorkspaceSetup from './pages/WorkspaceSetup';
+import Workspace from './pages/Workspace';
 import FAQ from './pages/FAQ';
 import Settings from './pages/Settings';
 import { Toaster } from 'react-hot-toast';
@@ -58,6 +60,24 @@ function AnimatedRoutes({ isDark, toggleTheme }) {
               <ProtectedRoute>
                 <AppLayoutWrapper isDark={isDark} toggleTheme={toggleTheme}>
                   <Tickets isDark={isDark} />
+                </AppLayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workspace-setup"
+            element={
+              <ProtectedRoute>
+                <WorkspaceSetup />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workspace"
+            element={
+              <ProtectedRoute>
+                <AppLayoutWrapper isDark={isDark} toggleTheme={toggleTheme}>
+                  <Workspace />
                 </AppLayoutWrapper>
               </ProtectedRoute>
             }

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Ticket, MessageSquare,
   HelpCircle, Settings, LogOut, Moon, Sun,
-  ChevronRight, ChevronLeft, User, Zap, Sparkles
+  ChevronRight, ChevronLeft, User, Zap, Sparkles, Globe
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -44,6 +44,7 @@ export default function Sidebar({ isDark, toggleTheme, isMobileOpen, setMobileOp
 
   const navItems = useMemo(() => [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', adminOnly: true, color: 'text-blue-500' },
+    { label: 'Workspace', icon: Globe, path: '/workspace', adminOnly: false, color: 'text-sky-500' },
     { label: 'Tickets', icon: Ticket, path: '/tickets', adminOnly: false, color: 'text-emerald-500' },
     { label: 'X1 Chat', icon: MessageSquare, path: '/chat', adminOnly: false, color: 'text-purple-500' },
     { label: 'FAQ', icon: HelpCircle, path: '/faqs', adminOnly: true, color: 'text-amber-500' },

@@ -21,7 +21,7 @@ export default function Register() {
     try {
       const data = await register(name, email, password);
       toast.success(`Welcome, ${name}!`);
-      navigate(data?.user?.role === 'admin' ? '/dashboard' : '/chat');
+      navigate(data?.user?.role === 'admin' ? '/dashboard' : '/workspace-setup');
     } catch (error) {
       toast.error(error.message);
     } finally {
